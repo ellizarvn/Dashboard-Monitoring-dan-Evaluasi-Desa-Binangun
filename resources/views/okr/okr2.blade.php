@@ -253,7 +253,7 @@ async function simpanTransaksi() {
     const desc   = document.getElementById('trx-desc').value;
 
     if (!unitId || !date || !type || !nominal || nominal <= 0) {
-        Swal.fire({ icon: 'warning', title: 'Data Belum Lengkap', text: 'Isi semua field yang diperlukan.', confirmButtonColor: '#1A362B' });
+        Swal.fire({ icon: 'warning', title: 'Data Belum Lengkap', text: 'Isi semua field yang diperlukan.', confirmButtonColor: '#096b68' });
         return;
     }
 
@@ -266,7 +266,7 @@ async function simpanTransaksi() {
         showToast('Transaksi berhasil disimpan.', 'success');
         setTimeout(() => location.reload(), 1500);
     } else {
-        Swal.fire({ icon: 'error', title: 'Gagal', text: res.data.message, confirmButtonColor: '#1A362B' });
+        Swal.fire({ icon: 'error', title: 'Gagal', text: res.data.message, confirmButtonColor: '#096b68' });
     }
 }
 
@@ -277,7 +277,7 @@ async function simpanPades() {
     const file    = document.getElementById('pades-file').files[0];
 
     if (!unitId || !period || !nominal || nominal <= 0) {
-        Swal.fire({ icon: 'warning', title: 'Data Belum Lengkap', text: 'Isi semua field setoran PADes.', confirmButtonColor: '#1A362B' });
+        Swal.fire({ icon: 'warning', title: 'Data Belum Lengkap', text: 'Isi semua field setoran PADes.', confirmButtonColor: '#096b68' });
         return;
     }
 
@@ -299,7 +299,7 @@ async function simpanPades() {
             showToast('Setoran PADes berhasil disimpan.', 'success');
             setTimeout(() => location.reload(), 1500);
         } else {
-            Swal.fire({ icon: 'error', title: 'Validasi Gagal', text: json.message, confirmButtonColor: '#1A362B' });
+            Swal.fire({ icon: 'error', title: 'Validasi Gagal', text: json.message, confirmButtonColor: '#096b68' });
         }
     } catch (e) {
         showToast('Koneksi gagal. Coba lagi.', 'error');

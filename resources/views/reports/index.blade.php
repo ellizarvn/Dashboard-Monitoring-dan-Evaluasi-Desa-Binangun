@@ -296,7 +296,7 @@ async function simpanLaporan() {
     const status = document.querySelector('input[name="lap-status"]:checked')?.value;
 
     if (!title) {
-        Swal.fire({ icon: 'warning', title: 'Judul Kosong', text: 'Isi judul laporan terlebih dahulu.', confirmButtonColor: '#1A362B' });
+        Swal.fire({ icon: 'warning', title: 'Judul Kosong', text: 'Isi judul laporan terlebih dahulu.', confirmButtonColor: '#096b68' });
         return;
     }
 
@@ -310,7 +310,7 @@ async function simpanLaporan() {
         showToast(res.data.message, 'success');
         setTimeout(() => location.reload(), 1500);
     } else {
-        Swal.fire({ icon: 'error', title: 'Gagal', text: res.data.message, confirmButtonColor: '#1A362B' });
+        Swal.fire({ icon: 'error', title: 'Gagal', text: res.data.message, confirmButtonColor: '#096b68' });
     }
 }
 

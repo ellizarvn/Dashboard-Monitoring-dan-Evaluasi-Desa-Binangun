@@ -319,7 +319,7 @@ async function simpanTarget() {
         const msg = res.data.errors
             ? Object.values(res.data.errors).flat().join('\n')
             : (res.data.message || 'Terjadi kesalahan saat menyimpan.');
-        Swal.fire({ icon: 'error', title: 'Gagal Menyimpan', text: msg, confirmButtonColor: '#1A362B' });
+        Swal.fire({ icon: 'error', title: 'Gagal Menyimpan', text: msg, confirmButtonColor: '#096b68' });
     }
 }
 </script>

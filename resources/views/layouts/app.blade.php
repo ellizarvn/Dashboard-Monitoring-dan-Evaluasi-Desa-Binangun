@@ -18,7 +18,7 @@
             theme: {
                 extend: {
                     colors: {
-                        forest:  { DEFAULT: '#1A362B', 50: '#E6F4ED', 100: '#CCE7D6', 200: '#99CFAC', 300: '#66B783', 400: '#3D965B', 500: '#1A362B', 600: '#162D24', 700: '#12251D', 800: '#0E1C16', 900: '#0A130F' },
+                        forest:  { DEFAULT: '#096b68', 50: '#E6F5F4', 100: '#CCE7E6', 200: '#99CFCD', 300: '#66B6B3', 400: '#3D9693', 500: '#096b68', 600: '#085F5C', 700: '#064E4B', 800: '#053C3A', 900: '#032B2A' },
                         sage:    { DEFAULT: '#87A996', 50: '#F2F7F5', 100: '#E6F0EB', 200: '#CCE0D8', 300: '#B3D1C4', 400: '#99C1B0', 500: '#87A996', 600: '#6C9480', 700: '#517F6A', 800: '#3A5B4C', 900: '#243730' },
                         mint:    { DEFAULT: '#CCE7D6', 50: '#F5FBF7', 100: '#EBF7EF', 200: '#D7EFE0', 300: '#CCE7D6', 400: '#A8D5BA', 500: '#84C39F' },
                     },
@@ -50,20 +50,30 @@
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: #F2F7F5; }
         ::-webkit-scrollbar-thumb { background: #87A996; border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: #1A362B; }
+        ::-webkit-scrollbar-thumb:hover { background: #096b68; }
 
         /* Sidebar transisi */
-        #sidebar { transition: transform 0.3s cubic-bezier(0.4,0,0.2,1); }
+        #sidebar { transition: width 0.3s ease, opacity 0.3s ease, transform 0.3s ease; }
         #sidebar-overlay { transition: opacity 0.3s ease; }
+
+        /* Desktop sidebar hide/show */
+        @media (min-width: 1024px) {
+            #sidebar.sidebar-hidden {
+                width: 0 !important;
+                min-width: 0 !important;
+                opacity: 0;
+                pointer-events: none;
+                transform: translateX(-100%);
+            }
+        }
 
         /* Active nav item */
         .nav-item-active {
-            background: linear-gradient(90deg, rgba(204,231,214,0.7) 0%, rgba(230,244,237,0.4) 100%);
-            border-left: 4px solid #1A362B;
-            color: #1A362B !important;
+            background: #096b68;
+            color: #EBF7EF !important;
             font-weight: 700;
         }
-        .nav-item-active svg { color: #1A362B !important; }
+        .nav-item-active svg { color: #EBF7EF !important; }
 
         /* Progress bar animasi */
         @keyframes progressFill {
@@ -94,13 +104,36 @@
         .badge-pulse { animation: badgePulse 2s ease-in-out infinite; }
 
         /* SweetAlert2 kustom */
-        .swal2-confirm { background-color: #1A362B !important; }
-        .swal2-cancel  { background-color: #ffffff !important; color: #1A362B !important; border: 1px solid #1A362B !important; }
+        .swal2-confirm,
+        .swal2-cancel {
+            min-width: 120px;
+            padding: 0.75rem 1.25rem !important;
+            border-radius: 1rem !important;
+            font-size: 0.95rem !important;
+            font-weight: 600 !important;
+            text-transform: none !important;
+        }
+        .swal2-confirm {
+            background-color: #096b68 !important;
+            color: #ffffff !important;
+            border: none !important;
+        }
+        .swal2-cancel {
+            background-color: #ffffff !important;
+            color: #096b68 !important;
+            border: 1px solid #096b68 !important;
+        }
+        .swal2-actions {
+            display: flex !important;
+            justify-content: center !important;
+            gap: 0.75rem !important;
+            flex-wrap: wrap !important;
+        }
         .swal2-title   { font-family: 'Plus Jakarta Sans', sans-serif !important; }
         .swal2-html-container { font-family: 'Plus Jakarta Sans', sans-serif !important; }
 
         /* Toast SweetAlert2 */
-        .swal2-popup.swal2-toast { border-left: 4px solid #1A362B !important; }
+        .swal2-popup.swal2-toast { border-left: 4px solid #096b68 !important; }
     </style>
 
     @stack('head-scripts')
@@ -115,39 +148,23 @@
      onclick="closeSidebar()">
 </div>
 
-<div id="main-layout" class="flex h-screen overflow-hidden">
+<div id="main-layout" class="flex h-screen overflow-hidden transition-all duration-300 ease-in-out">
 
     {{-- ============================================================ --}}
     {{-- SIDEBAR NAVIGASI --}}
     {{-- ============================================================ --}}
     <aside id="sidebar"
            class="fixed lg:static inset-y-0 left-0 z-40 w-64 bg-white shadow-sidebar flex flex-col
-                  -translate-x-full lg:translate-x-0 flex-shrink-0">
+                  -translate-x-full lg:translate-x-0 shrink-0">
 
         {{-- Logo & Brand --}}
         <div class="flex items-center gap-3 px-5 py-5 border-b border-sage-100">
-            <div class="w-10 h-10 rounded-xl bg-forest flex items-center justify-center flex-shrink-0 shadow-md">
-                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
-                </svg>
+            <div class="w-12 h-12 flex items-center justify-center">
+               <img src="/desa-binangun.png" alt="logo pemerintah desa binangun">
             </div>
             <div class="min-w-0">
                 <p class="font-display text-sm font-semibold text-forest leading-tight">Desa Binangun</p>
                 <p class="text-[10px] text-sage-600 font-medium tracking-wide uppercase mt-0.5">Portal Transparansi</p>
-            </div>
-        </div>
-
-        {{-- User Info Mini --}}
-        <div class="px-4 py-3 border-b border-sage-100/60 bg-forest-50/40">
-            <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-full bg-forest flex items-center justify-center flex-shrink-0">
-                    <span class="text-white text-xs font-bold">{{ auth()->user()->initials }}</span>
-                </div>
-                <div class="min-w-0">
-                    <p class="text-xs font-semibold text-forest truncate">{{ auth()->user()->name }}</p>
-                    <span class="text-[10px] text-sage-600 font-medium">{{ auth()->user()->role_label }}</span>
-                </div>
             </div>
         </div>
 
@@ -177,32 +194,40 @@
             @if(in_array(auth()->user()->role, ['admin','kepala_desa']))
             <x-nav-item route="audit.index" icon="shield">Audit Log</x-nav-item>
             @endif
-
-            <div class="px-3 pt-4 pb-1">
-                <span class="text-[9px] font-bold text-sage-500 uppercase tracking-widest">Lainnya</span>
-            </div>
-
-            <x-nav-item route="settings.index" icon="cog">Pengaturan Akun</x-nav-item>
-            <x-nav-item route="help.index" icon="question">Pusat Bantuan</x-nav-item>
         </nav>
 
-        {{-- Tombol Logout di Bawah --}}
-        <div class="px-3 py-4 border-t border-sage-100">
-            <button onclick="konfirmasiLogout()"
-                    class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-red-600 hover:bg-red-50
-                           transition-all duration-200 group text-sm font-medium">
-                <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
-                </svg>
-                <span>Keluar</span>
+        {{-- Sidebar Footer User Info --}}
+        <div class="mt-auto border-t border-sage-100/60 bg-forest-50/40 px-4 py-4 relative">
+            <button id="sidebar-user-toggle" type="button" onclick="toggleSidebarUserMenu()"
+                    class="w-full rounded-3xl bg-white/90 px-3 py-3 text-left shadow-sm transition hover:bg-sage-50">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-forest flex items-center justify-center shrink-0 shadow-sm">
+                        <span class="text-white text-sm font-bold">{{ auth()->user()->initials }}</span>
+                    </div>
+                    <div class="min-w-0">
+                        <p class="text-sm font-semibold text-forest truncate">{{ auth()->user()->name }}</p>
+                        <span class="text-[10px] text-sage-600 font-medium">{{ auth()->user()->role_label }}</span>
+                    </div>
+                    <svg class="w-4 h-4 text-sage-500 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                </div>
             </button>
-
-            {{-- Form logout tersembunyi --}}
-            <form id="logout-form" action="{{ route('auth.logout') }}" method="POST" class="hidden">
-                @csrf
-            </form>
+            <div id="sidebar-user-menu" class="hidden bottom-5 absolute left-full  z-50 ml-3 w-64 overflow-hidden rounded-3xl border border-sage-200 bg-white shadow-card">
+                <div class="border-b border-sage-100 px-4 py-3">
+                    <p class="text-sm font-semibold text-forest truncate">{{ auth()->user()->name }}</p>
+                    <p class="text-[12px] text-sage-600">{{ auth()->user()->role_label }}</p>
+                </div>
+                <a href="{{ route('settings.index') }}" class="block px-4 py-3 text-sm text-forest hover:bg-sage-50">Pengaturan Akun</a>
+                <a href="{{ route('help.index') }}" class="block px-4 py-3 text-sm text-forest hover:bg-sage-50">Pusat Bantuan</a>
+                <button type="button" onclick="konfirmasiLogout()" class="w-full text-left px-4 py-3 text-sm text-red-600 hover:bg-red-50">Keluar</button>
+            </div>
         </div>
+
+        {{-- Hidden Logout Form --}}
+        <form id="logout-form" action="{{ route('auth.logout') }}" method="POST" class="hidden">
+            @csrf
+        </form>
     </aside>
 
     {{-- ============================================================ --}}
@@ -211,41 +236,44 @@
     <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
 
         {{-- Top Header Bar --}}
-        <header class="flex-shrink-0 bg-white border-b border-sage-100 px-4 sm:px-6 py-3 flex items-center justify-between shadow-sm z-20">
-            {{-- Hamburger (Mobile) --}}
-            <button onclick="toggleSidebar()"
-                    class="lg:hidden p-2 rounded-lg hover:bg-forest-50 text-forest transition-colors">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
-                </svg>
-            </button>
+        <header class="shrink-0 bg-white border-b border-sage-100 px-4 sm:px-6 py-3 flex items-center justify-between shadow-sm z-20">
+            <div class="flex items-center gap-3">
+                <button onclick="toggleSidebar()"
+                        class="lg:hidden p-2 rounded-lg hover:bg-forest-50 text-forest transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                    </svg>
+                </button>
 
-            {{-- Breadcrumb / Page Title --}}
-            <div class="flex items-center gap-2 min-w-0">
-                <span class="text-xs text-sage-500 hidden sm:inline">Portal Desa Binangun</span>
-                <svg class="w-3 h-3 text-sage-400 hidden sm:inline flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                </svg>
-                <span class="text-xs font-semibold text-forest truncate">@yield('breadcrumb', 'Dashboard')</span>
+                <button id="desktop-sidebar-toggle" type="button" onclick="toggleSidebarDesktop()"
+                        class="hidden lg:inline-flex items-center justify-center  bg-white w-10 h-10 text-forest ">
+                    <span id="desktop-sidebar-toggle-icon" class="inline-flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-panel-left-close-icon lucide-panel-left-close">
+                            <rect width="18" height="18" x="3" y="3" rx="2"/>
+                            <path d="M9 3v18"/>
+                            <path d="m16 15-3-3 3-3"/>
+                        </svg>
+                    </span>
+                </button>
+
+                <div class="flex items-center gap-2 min-w-0">
+                    <span class="text-xs text-sage-500 hidden sm:inline">Portal Desa Binangun</span>
+                    <svg class="w-3 h-3 text-sage-400 hidden sm:inline shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                    </svg>
+                    <span class="text-sm font-semibold text-forest truncate">@yield('breadcrumb', 'Dashboard')</span>
+                </div>
             </div>
 
-            {{-- Right: Tanggal & Notifikasi --}}
             <div class="flex items-center gap-3">
-                {{-- Tanggal Aktif --}}
                 <div class="hidden sm:flex items-center gap-2 bg-forest-50 rounded-lg px-3 py-1.5">
                     <svg class="w-3.5 h-3.5 text-forest" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                               d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                     </svg>
                     <span class="text-xs font-semibold text-forest" id="current-date">
-                        {{ \Carbon\Carbon::now('Asia/Jakarta')->isoFormat('dddd, D MMMM YYYY') }}
+                        {{ \Carbon\Carbon::now('Asia/Jakarta')->locale('id')->isoFormat('dddd, D MMMM YYYY') }}
                     </span>
-                </div>
-
-                {{-- Avatar --}}
-                <div class="w-8 h-8 rounded-full bg-forest flex items-center justify-center flex-shrink-0 cursor-pointer"
-                     onclick="window.location='{{ route('settings.index') }}'">
-                    <span class="text-white text-xs font-bold">{{ auth()->user()->initials }}</span>
                 </div>
             </div>
         </header>
@@ -253,7 +281,7 @@
         {{-- Flash Message Notifications --}}
         @if(session('success_password'))
             <div id="flash-success" class="mx-4 sm:mx-6 mt-4 flex items-center gap-3 bg-forest-50 border border-forest-200 rounded-xl px-4 py-3">
-                <svg class="w-5 h-5 text-forest flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-5 h-5 text-forest shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
                 <p class="text-sm font-medium text-forest">{{ session('success_password') }}</p>
@@ -301,6 +329,66 @@ function closeSidebar() {
     overlay.classList.add('opacity-0');
     setTimeout(() => overlay.classList.add('hidden'), 300);
 }
+
+function toggleSidebarUserMenu() {
+    const menu = document.getElementById('sidebar-user-menu');
+    if (!menu) return;
+    menu.classList.toggle('hidden');
+}
+
+document.addEventListener('click', function(event) {
+    const menu = document.getElementById('sidebar-user-menu');
+    const toggle = document.getElementById('sidebar-user-toggle');
+    if (!menu || !toggle) return;
+    if (!menu.classList.contains('hidden') && !menu.contains(event.target) && !toggle.contains(event.target)) {
+        menu.classList.add('hidden');
+    }
+});
+
+/* ---- Sidebar Toggle (Desktop) ---- */
+function setSidebarDesktopState(isOpen) {
+    const sidebar = document.getElementById('sidebar');
+    const mainLayout = document.getElementById('main-layout');
+    const toggleIcon = document.getElementById('desktop-sidebar-toggle-icon');
+
+    if (!sidebar || !mainLayout || !toggleIcon) return;
+
+    if (isOpen) {
+        sidebar.classList.remove('sidebar-hidden');
+        mainLayout.classList.remove('sidebar-closed');
+        toggleIcon.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-panel-left-close-icon lucide-panel-left-close">
+                <rect width="18" height="18" x="3" y="3" rx="2"/>
+                <path d="M9 3v18"/>
+                <path d="m16 15-3-3 3-3"/>
+            </svg>
+        `;
+    } else {
+        sidebar.classList.add('sidebar-hidden');
+        mainLayout.classList.add('sidebar-closed');
+        toggleIcon.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-panel-right-close-icon lucide-panel-right-close">
+                <rect width="18" height="18" x="3" y="3" rx="2"/>
+                <path d="M15 3v18"/>
+                <path d="m8 9 3 3-3 3"/>
+            </svg>
+        `;
+    }
+}
+
+function toggleSidebarDesktop() {
+    const isOpen = localStorage.getItem('sidebarDesktopOpen');
+    const openState = isOpen === null ? true : isOpen === 'true';
+    const nextState = !openState;
+    setSidebarDesktopState(nextState);
+    localStorage.setItem('sidebarDesktopOpen', String(nextState));
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+    const saved = localStorage.getItem('sidebarDesktopOpen');
+    const isOpen = saved === null ? true : saved === 'true';
+    setSidebarDesktopState(isOpen);
+});
 
 /* ---- Modal Konfirmasi Logout ---- */
 function konfirmasiLogout() {

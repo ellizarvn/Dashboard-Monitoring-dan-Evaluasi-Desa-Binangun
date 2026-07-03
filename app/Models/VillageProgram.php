@@ -42,7 +42,7 @@ class VillageProgram extends Model
      */
     public function getProgressColorAttribute(): string
     {
-        if ($this->progress_percentage >= 80) return '#1A362B';
+        if ($this->progress_percentage >= 80) return '#096b68';
         if ($this->progress_percentage >= 50) return '#87A996';
         return '#f59e0b';
     }

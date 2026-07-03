@@ -103,7 +103,7 @@
                     </div>
                     <input type="range" id="prog-progress" min="0" max="100" value="0"
                            class="w-full h-2 rounded-full appearance-none cursor-pointer"
-                           style="accent-color: #1A362B;"
+                           style="accent-color: #096b68;"
                            oninput="updateProgress(this.value)">
                     <div class="flex justify-between text-[10px] text-gray-400 mt-1">
                         <span>0%</span><span>50%</span><span>100%</span>
@@ -359,7 +359,7 @@ async function simpanProgram() {
         showSuccessModal('Program Berhasil Disimpan', res.data.message, new Date().toLocaleString('id-ID'));
         setTimeout(() => location.reload(), 2000);
     } else {
-        Swal.fire({ icon: 'error', title: 'Gagal', text: res.data.message || 'Terjadi kesalahan.', confirmButtonColor: '#1A362B' });
+        Swal.fire({ icon: 'error', title: 'Gagal', text: res.data.message || 'Terjadi kesalahan.', confirmButtonColor: '#096b68' });
     }
 }
 

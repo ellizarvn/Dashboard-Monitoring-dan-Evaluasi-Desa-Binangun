@@ -208,7 +208,7 @@
             <div class="relative flex-shrink-0">
                 <canvas id="chart-{{ $key }}" width="90" height="90"
                         data-value="{{ $capaian }}"
-                        data-color="{{ $capaian >= 80 ? '#1A362B' : ($capaian >= 60 ? '#87A996' : '#f59e0b') }}">
+                        data-color="{{ $capaian >= 80 ? '#096b68' : ($capaian >= 60 ? '#87A996' : '#f59e0b') }}">
                 </canvas>
                 <div class="absolute inset-0 flex items-center justify-center">
                     <span class="text-sm font-black text-forest leading-none">{{ round($capaian) }}%</span>
@@ -283,7 +283,7 @@
         </div>
         <div class="mt-4 space-y-2">
             @foreach([
-                ['AKTIF', $distribusiProgram['AKTIF'], '#1A362B'],
+                ['AKTIF', $distribusiProgram['AKTIF'], '#096b68'],
                 ['PENDING', $distribusiProgram['PENDING'], '#87A996'],
                 ['SELESAI', $distribusiProgram['SELESAI'], '#CCE7D6'],
             ] as [$label, $val, $color])
@@ -359,7 +359,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // ---- Radial Charts (OKR 1,2,3) ----
     document.querySelectorAll('[id^="chart-okr"]').forEach(canvas => {
         const val   = parseFloat(canvas.dataset.value) || 0;
-        const color = canvas.dataset.color || '#1A362B';
+        const color = canvas.dataset.color || '#096b68';
         new Chart(canvas, {
             type: 'doughnut',
             data: {
@@ -393,10 +393,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     {
                         label: 'Realisasi (%)',
                         data: tren.values || [],
-                        borderColor: '#1A362B',
-                        backgroundColor: 'rgba(26,54,43,0.08)',
+                        borderColor: '#096b68',
+                        backgroundColor: 'rgba(9,107,104,0.08)',
                         borderWidth: 2.5,
-                        pointBackgroundColor: '#1A362B',
+                        pointBackgroundColor: '#096b68',
                         pointRadius: 4,
                         pointHoverRadius: 6,
                         tension: 0.4,
@@ -449,7 +449,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     {
                         label: 'Realisasi',
                         data: bar.actual || [],
-                        backgroundColor: '#1A362B',
+                        backgroundColor: '#096b68',
                         borderRadius: 6,
                         barThickness: 14,
                     },
@@ -497,7 +497,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 labels: ['Aktif', 'Pending', 'Selesai'],
                 datasets: [{
                     data: values,
-                    backgroundColor: ['#1A362B', '#87A996', '#CCE7D6'],
+                    backgroundColor: ['#096b68', '#87A996', '#CCE7D6'],
                     borderWidth: 0,
                     borderRadius: 3,
                 }]

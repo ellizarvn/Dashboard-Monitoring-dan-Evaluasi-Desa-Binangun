@@ -218,7 +218,7 @@ async function simpanPartisipasi() {
     const hadir = parseInt(document.getElementById('warga-hadir').value);
 
     if (!total || total <= 0 || hadir < 0 || hadir > total) {
-        Swal.fire({ icon: 'warning', title: 'Data Tidak Valid', text: 'Periksa kembali jumlah warga wajib lapor dan warga hadir.', confirmButtonColor: '#1A362B' });
+        Swal.fire({ icon: 'warning', title: 'Data Tidak Valid', text: 'Periksa kembali jumlah warga wajib lapor dan warga hadir.', confirmButtonColor: '#096b68' });
         return;
     }
 
@@ -238,7 +238,7 @@ async function simpanPartisipasi() {
             new Date().toLocaleString('id-ID'));
         setTimeout(() => location.reload(), 2000);
     } else {
-        Swal.fire({ icon: 'error', title: 'Gagal', text: res.data.message, confirmButtonColor: '#1A362B' });
+        Swal.fire({ icon: 'error', title: 'Gagal', text: res.data.message, confirmButtonColor: '#096b68' });
     }
 }
 
@@ -260,10 +260,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 {
                     label: 'Partisipasi (%)',
                     data: values,
-                    borderColor: '#1A362B',
-                    backgroundColor: 'rgba(26,54,43,0.07)',
+                    borderColor: '#096b68',
+                    backgroundColor: 'rgba(9,107,104,0.07)',
                     borderWidth: 2.5,
-                    pointBackgroundColor: '#1A362B',
+                    pointBackgroundColor: '#096b68',
                     pointRadius: 5,
                     tension: 0.4,
                     fill: true,

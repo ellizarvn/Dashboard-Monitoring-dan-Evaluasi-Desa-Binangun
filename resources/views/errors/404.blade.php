@@ -6,7 +6,7 @@
     <title>404 — Halaman Tidak Ditemukan | Desa Binangun</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=DM+Serif+Display&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>tailwind.config={theme:{extend:{colors:{forest:{DEFAULT:'#1A362B',50:'#E6F4ED',600:'#162D24'},sage:{DEFAULT:'#87A996'}},fontFamily:{sans:['"Plus Jakarta Sans"','sans-serif'],display:['"DM Serif Display"','serif']}}}}</script>
+    <script>tailwind.config={theme:{extend:{colors:{forest:{DEFAULT:'#096b68',50:'#E6F5F4',600:'#085F5C'},sage:{DEFAULT:'#87A996'}},fontFamily:{sans:['"Plus Jakarta Sans"','sans-serif'],display:['"DM Serif Display"','serif']}}}}</script>
     <style>body{font-family:'Plus Jakarta Sans',sans-serif;}</style>
 </head>
 <body class="min-h-screen bg-forest-50 flex items-center justify-center p-6">

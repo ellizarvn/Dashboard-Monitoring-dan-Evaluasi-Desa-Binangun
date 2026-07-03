@@ -153,7 +153,7 @@
                     <div class="relative">
                         <canvas id="{{ $chartId }}" width="90" height="90"
                                 data-value="{{ round($val, 1) }}"
-                                data-color="{{ $val >= 75 ? '#1A362B' : ($val >= 60 ? '#87A996' : '#f59e0b') }}">
+                                data-color="{{ $val >= 75 ? '#096b68' : ($val >= 60 ? '#87A996' : '#f59e0b') }}">
                         </canvas>
                         <div class="absolute inset-0 flex items-center justify-center">
                             <span class="text-sm font-black text-forest">{{ round($val) }}%</span>
@@ -194,7 +194,7 @@ document.addEventListener('DOMContentLoaded', function() {
     Chart.defaults.font.family = "'Plus Jakarta Sans', sans-serif";
     document.querySelectorAll('[id^="chart-sdm-"]').forEach(canvas => {
         const val   = parseFloat(canvas.dataset.value) || 0;
-        const color = canvas.dataset.color || '#1A362B';
+        const color = canvas.dataset.color || '#096b68';
         new Chart(canvas, {
             type: 'doughnut',
             data: {
@@ -222,7 +222,7 @@ async function simpanSdm() {
     const staf      = parseInt(document.getElementById('sdm-staf').value);
 
     if (staf > perangkat) {
-        Swal.fire({ icon: 'warning', title: 'Data Tidak Valid', text: 'Jumlah staf terlatih tidak boleh melebihi total perangkat.', confirmButtonColor: '#1A362B' });
+        Swal.fire({ icon: 'warning', title: 'Data Tidak Valid', text: 'Jumlah staf terlatih tidak boleh melebihi total perangkat.', confirmButtonColor: '#096b68' });
         return;
     }
 
@@ -241,7 +241,7 @@ async function simpanSdm() {
         showToast('Data SDM berhasil disimpan.', 'success');
         setTimeout(() => location.reload(), 1500);
     } else {
-        Swal.fire({ icon: 'error', title: 'Gagal', text: res.data.message, confirmButtonColor: '#1A362B' });
+        Swal.fire({ icon: 'error', title: 'Gagal', text: res.data.message, confirmButtonColor: '#096b68' });
     }
 }
 </script>
