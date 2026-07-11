@@ -8,16 +8,26 @@
         <h1 class="font-display text-2xl text-forest">Manajemen Laporan Desa</h1>
         <p class="text-sm text-sage-600 mt-0.5">Kelola dokumen laporan bulanan, triwulan, dan tahunan desa</p>
     </div>
-    @if(in_array(auth()->user()->role, ['admin','tim_monitoring','kepala_desa']))
-    <button onclick="bukaModalLaporan()"
-            class="flex items-center gap-2 bg-forest text-white text-sm font-bold px-5 py-2.5 rounded-xl
-                   hover:bg-forest-600 active:scale-[0.98] transition-all shadow-md shadow-forest/20">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
-        </svg>
-        Laporan Baru
-    </button>
-    @endif
+    <div class="flex items-center gap-2 flex-wrap">
+        <a href="{{ route('reports.export.csv') }}"
+           class="flex items-center gap-2 border border-forest text-forest hover:bg-forest-50 text-sm font-bold px-5 py-2.5 rounded-xl
+                  active:scale-[0.98] transition-all shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+            </svg>
+            Ekspor Laporan (CSV)
+        </a>
+        @if(in_array(auth()->user()->role, ['admin','tim_monitoring','kepala_desa']))
+        <button onclick="bukaModalLaporan()"
+                class="flex items-center gap-2 bg-forest text-white text-sm font-bold px-5 py-2.5 rounded-xl
+                       hover:bg-forest-600 active:scale-[0.98] transition-all shadow-md shadow-forest/20">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
+            </svg>
+            Laporan Baru
+        </button>
+        @endif
+    </div>
 </div>
 
 {{-- ============================================================ --}}
@@ -96,10 +106,21 @@
 {{-- ============================================================ --}}
 {{-- TABEL LAPORAN --}}
 {{-- ============================================================ --}}
-<div class="bg-white rounded-2xl shadow-card border border-sage-100/60 overflow-hidden">
+<div id="tabel-laporan" class="bg-white rounded-2xl shadow-card border border-sage-100/60 overflow-hidden">
     <div class="px-6 py-4 border-b border-sage-100/60 flex items-center justify-between">
         <h2 class="font-bold text-forest text-sm">Riwayat Berkas Laporan</h2>
-        <p class="text-xs text-sage-500">{{ $reports->total() }} laporan</p>
+        <div class="flex items-center gap-3">
+            @if(request()->filled('status'))
+            <a href="{{ route('reports.index') }}#tabel-laporan"
+               class="text-[10px] font-bold bg-amber-50 text-amber-700 px-2.5 py-1 rounded-lg hover:bg-amber-100 transition-all flex items-center gap-1">
+                Filter: {{ request('status') }}
+                <svg class="w-3 h-3 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </a>
+            @endif
+            <p class="text-xs text-sage-500">{{ $reports->total() }} laporan</p>
+        </div>
     </div>
 
     <div class="overflow-x-auto">
@@ -307,8 +328,8 @@ async function simpanLaporan() {
 
     if (res.ok && res.data.success) {
         tutupModal();
-        showToast(res.data.message, 'success');
-        setTimeout(() => location.reload(), 1500);
+        showSuccessModal('Laporan Berhasil Disimpan', res.data.message, new Date().toLocaleString('id-ID'));
+        setTimeout(() => location.reload(), 2000);
     } else {
         Swal.fire({ icon: 'error', title: 'Gagal', text: res.data.message, confirmButtonColor: '#096b68' });
     }
@@ -360,7 +381,7 @@ async function hapusLaporan(id, title) {
 
 function tinjauDraf() {
     // Scroll ke tabel dan filter draf
-    window.location = '{{ route('reports.index') }}?status=Draft';
+    window.location = '{{ route('reports.index') }}?status=Draft#tabel-laporan';
 }
 </script>
 @endpush

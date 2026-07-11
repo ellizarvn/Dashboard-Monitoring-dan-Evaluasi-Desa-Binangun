@@ -5,13 +5,16 @@
 @section('content')
 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-7">
     <div>
-        <h1 class="font-display text-2xl text-forest">OKR 2 — Penguatan Ekonomi Lokal</h1>
+        <div class="flex flex-col">
+            <span class="text-xs font-bold text-sage-500 uppercase tracking-wider mb-0.5">OKR 2</span>
+            <h1 class="font-display text-2xl text-forest">Penguatan Ekonomi Lokal</h1>
+        </div>
         <p class="text-sm text-sage-600 mt-0.5">Monitoring BUMDes, transaksi keuangan, dan kontribusi PADes tahun {{ $year }}</p>
     </div>
     <span class="text-xs font-bold px-3 py-1.5 rounded-full
         {{ $capaian['status'] === 'ON TRACK' ? 'bg-green-50 text-green-700' :
            ($capaian['status'] === 'AT RISK' ? 'bg-amber-50 text-amber-700' : 'bg-red-50 text-red-600') }}">
-        {{ $capaian['status'] }} — {{ $capaian['avg_capaian'] }}%
+        {{ $capaian['status'] }} {{ $capaian['avg_capaian'] }}%
     </span>
 </div>
 
@@ -34,169 +37,80 @@
     @endforeach
 </div>
 
+@if(auth()->user()->canMutateData())
+<div class="flex items-center gap-3 mb-6 flex-wrap">
+    <button onclick="bukaModalTransaksi()"
+            class="flex items-center gap-2 bg-forest text-white text-sm font-bold px-5 py-2.5 rounded-xl
+                   hover:bg-forest-600 active:scale-[0.98] transition-all shadow-md shadow-forest/20">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
+        </svg>
+        Transaksi Baru
+    </button>
+    <button onclick="bukaModalPades()"
+            class="flex items-center gap-2 border border-forest text-forest hover:bg-forest-50 text-sm font-bold px-5 py-2.5 rounded-xl
+                   active:scale-[0.98] transition-all shadow-sm">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
+        </svg>
+        Setoran PADes
+    </button>
+</div>
+@endif
+
 <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
 
     {{-- ============================================================ --}}
-    {{-- FORM INPUT TRANSAKSI --}}
+    {{-- DAFTAR UNIT USAHA BUMDES (Kiri) --}}
     {{-- ============================================================ --}}
     <div class="space-y-5">
-        <div class="bg-white rounded-2xl shadow-card border border-sage-100/60 p-6">
-            <h2 class="font-bold text-forest text-sm mb-5">Input Transaksi BUMDes Baru</h2>
-
-            @if(auth()->user()->canMutateData())
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-xs font-semibold text-gray-700 mb-1.5">Unit Usaha</label>
-                    <select id="trx-unit"
-                            class="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-medium bg-white
-                                   focus:outline-none focus:border-forest focus:ring-2 focus:ring-forest/10">
-                        <option value="">-- Pilih Unit Usaha --</option>
-                        @foreach($units as $unit)
-                        <option value="{{ $unit->id }}">{{ $unit->name_unit }} ({{ $unit->sector }})</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-gray-700 mb-1.5">Tanggal Transaksi</label>
-                    <input type="date" id="trx-date" value="{{ now()->format('Y-m-d') }}"
-                           class="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-medium
-                                  focus:outline-none focus:border-forest focus:ring-2 focus:ring-forest/10">
-                </div>
-                {{-- Tipe Transaksi (Radio Button) --}}
-                <div>
-                    <label class="block text-xs font-semibold text-gray-700 mb-2">Jenis Transaksi</label>
-                    <div class="flex gap-3">
-                        <label class="flex-1 flex items-center gap-2.5 p-3 border border-gray-200 rounded-xl cursor-pointer hover:border-forest transition-colors has-[:checked]:border-forest has-[:checked]:bg-forest-50">
-                            <input type="radio" name="trx-type" value="Pemasukan" checked class="text-forest focus:ring-forest/20">
-                            <span class="text-xs font-bold text-gray-700">Pemasukan</span>
-                        </label>
-                        <label class="flex-1 flex items-center gap-2.5 p-3 border border-gray-200 rounded-xl cursor-pointer hover:border-red-300 transition-colors has-[:checked]:border-red-400 has-[:checked]:bg-red-50">
-                            <input type="radio" name="trx-type" value="Pengeluaran" class="text-red-500 focus:ring-red-300">
-                            <span class="text-xs font-bold text-gray-700">Pengeluaran</span>
-                        </label>
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-gray-700 mb-1.5">Nominal (Rp)</label>
-                    <div class="relative">
-                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-sage-500">Rp</span>
-                        <input type="number" id="trx-nominal" step="1000" min="1" placeholder="0"
-                               class="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold
-                                      focus:outline-none focus:border-forest focus:ring-2 focus:ring-forest/10">
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-gray-700 mb-1.5">Deskripsi</label>
-                    <input type="text" id="trx-desc" placeholder="Keterangan singkat transaksi..."
-                           class="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-medium
-                                  focus:outline-none focus:border-forest focus:ring-2 focus:ring-forest/10">
-                </div>
-                <button onclick="simpanTransaksi()"
-                        class="w-full py-3 bg-forest text-white font-bold rounded-xl text-sm
-                               hover:bg-forest-600 active:scale-[0.98] transition-all shadow-md shadow-forest/20">
-                    Simpan Transaksi
-                </button>
-            </div>
-            @else
-            <div class="bg-amber-50 border border-amber-200 rounded-xl p-4">
-                <p class="text-xs text-amber-700">Anda tidak memiliki akses untuk menginput transaksi.</p>
-            </div>
-            @endif
-        </div>
-
-        {{-- Form Setoran PADes --}}
-        <div class="bg-white rounded-2xl shadow-card border border-sage-100/60 p-6">
-            <h2 class="font-bold text-forest text-sm mb-1">Setoran Kontribusi PADes</h2>
-            <div class="flex items-start gap-2 mb-4 bg-amber-50 border border-amber-200 rounded-xl p-3">
-                <svg class="w-3.5 h-3.5 text-amber-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-                <p class="text-[10px] text-amber-700 font-medium leading-relaxed">
-                    <strong>PerDes:</strong> Setoran PADes minimal <strong>25% dari total laba bersih bulanan</strong> unit usaha BUMDes. Wajib dilampirkan bukti transfer.
-                </p>
-            </div>
-
-            @if(auth()->user()->canMutateData())
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-xs font-semibold text-gray-700 mb-1.5">Unit Usaha BUMDes</label>
-                    <select id="pades-unit"
-                            class="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-medium bg-white
-                                   focus:outline-none focus:border-forest focus:ring-2 focus:ring-forest/10">
-                        <option value="">-- Pilih Unit --</option>
-                        @foreach($units as $unit)
-                        <option value="{{ $unit->id }}">{{ $unit->name_unit }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-gray-700 mb-1.5">Periode (Bulan-Tahun)</label>
-                    <input type="month" id="pades-period" value="{{ now()->format('Y-m') }}"
-                           class="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-medium
-                                  focus:outline-none focus:border-forest focus:ring-2 focus:ring-forest/10">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-gray-700 mb-1.5">Nominal Setoran (Rp)</label>
-                    <div class="relative">
-                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-sage-500">Rp</span>
-                        <input type="number" id="pades-nominal" step="1000" min="1" placeholder="0"
-                               class="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold
-                                      focus:outline-none focus:border-forest focus:ring-2 focus:ring-forest/10">
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-gray-700 mb-1.5">
-                        Bukti Transfer
-                        <span class="text-red-500 font-bold">*</span>
-                    </label>
-                    <label class="flex flex-col items-center gap-2 border-2 border-dashed border-sage-200 rounded-xl p-4 cursor-pointer hover:border-forest hover:bg-forest-50 transition-all">
-                        <svg class="w-6 h-6 text-sage-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
-                        </svg>
-                        <span class="text-xs font-semibold text-sage-500" id="file-label">Klik atau drag file (PDF/JPG, maks. 5MB)</span>
-                        <input type="file" id="pades-file" accept=".pdf,.jpg,.jpeg,.png" class="hidden"
-                               onchange="document.getElementById('file-label').textContent = this.files[0]?.name || 'Klik atau drag file'">
-                    </label>
-                </div>
-                <button onclick="simpanPades()"
-                        class="w-full py-3 bg-forest text-white font-bold rounded-xl text-sm
-                               hover:bg-forest-600 active:scale-[0.98] transition-all shadow-md shadow-forest/20">
-                    Kirim Setoran PADes
-                </button>
-            </div>
-            @endif
-        </div>
-    </div>
-
-    {{-- ============================================================ --}}
-    {{-- TABEL TRANSAKSI TERBARU --}}
-    {{-- ============================================================ --}}
-    <div class="space-y-5">
-        {{-- Daftar Unit Usaha --}}
         <div class="bg-white rounded-2xl shadow-card border border-sage-100/60 overflow-hidden">
             <div class="px-6 py-4 border-b border-sage-100/60">
                 <h2 class="font-bold text-forest text-sm">Unit Usaha BUMDes</h2>
             </div>
-            <div class="divide-y divide-sage-50">
-                @foreach($units as $unit)
-                <div class="px-6 py-4 flex items-center justify-between">
-                    <div>
-                        <p class="text-sm font-bold text-forest">{{ $unit->name_unit }}</p>
-                        <p class="text-xs text-gray-500">PIC: {{ $unit->pic_name }}</p>
-                    </div>
-                    <div class="text-right">
-                        <span class="inline-block text-[10px] font-bold px-2.5 py-1 rounded-full
-                            {{ ['Perdagangan'=>'bg-blue-50 text-blue-700','Pertanian'=>'bg-green-50 text-green-700','Pariwisata'=>'bg-purple-50 text-purple-700','Jasa'=>'bg-amber-50 text-amber-700'][$unit->sector] ?? 'bg-gray-50 text-gray-600' }}">
-                            {{ $unit->sector }}
-                        </span>
-                        <p class="text-[10px] text-gray-400 mt-0.5">Modal: Rp {{ number_format($unit->initial_capital,0,',','.') }}</p>
-                    </div>
-                </div>
-                @endforeach
+            <div class="overflow-x-auto">
+                <table class="w-full text-xs">
+                    <thead>
+                        <tr class="bg-forest-50/30 border-b border-sage-100/60">
+                            <th class="text-left px-5 py-3 font-bold text-forest text-[11px] uppercase tracking-wide">Nama Unit / PIC</th>
+                            <th class="text-center px-4 py-3 font-bold text-forest text-[11px] uppercase tracking-wide">Sektor</th>
+                            <th class="text-right px-5 py-3 font-bold text-forest text-[11px] uppercase tracking-wide">Modal Awal</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-sage-50">
+                        @forelse($units as $unit)
+                        <tr class="hover:bg-forest-50/20 transition-colors">
+                            <td class="px-5 py-3.5">
+                                <p class="font-bold text-forest text-[13px]">{{ $unit->name_unit }}</p>
+                                <p class="text-[11px] text-gray-500 mt-0.5">PIC: {{ $unit->pic_name }}</p>
+                            </td>
+                            <td class="px-4 py-3.5 text-center">
+                                <span class="inline-block text-[10px] font-bold px-2.5 py-1 rounded-full
+                                    {{ ['Perdagangan'=>'bg-blue-50 text-blue-700','Pertanian'=>'bg-green-50 text-green-700','Pariwisata'=>'bg-purple-50 text-purple-700','Jasa'=>'bg-amber-50 text-amber-700'][$unit->sector] ?? 'bg-gray-50 text-gray-600' }}">
+                                    {{ $unit->sector }}
+                                </span>
+                            </td>
+                            <td class="px-5 py-3.5 text-right font-semibold text-gray-700">
+                                Rp {{ number_format($unit->initial_capital,0,',','.') }}
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="3" class="px-5 py-8 text-center text-xs text-gray-400">
+                                Belum ada unit usaha BUMDes terdaftar.
+                            </td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
         </div>
+    </div>
 
-        {{-- Transaksi Terbaru --}}
+    {{-- ============================================================ --}}
+    {{-- TABEL TRANSAKSI TERBARU (Kanan) --}}
+    {{-- ============================================================ --}}
+    <div class="space-y-5">
         <div class="bg-white rounded-2xl shadow-card border border-sage-100/60 overflow-hidden">
             <div class="px-6 py-4 border-b border-sage-100/60">
                 <h2 class="font-bold text-forest text-sm">20 Transaksi Terbaru {{ $year }}</h2>
@@ -241,10 +155,202 @@
         </div>
     </div>
 </div>
+
+@if(auth()->user()->canMutateData())
+{{-- ============================================================ --}}
+{{-- MODAL INPUT TRANSAKSI --}}
+{{-- ============================================================ --}}
+<div id="modal-transaksi"
+     class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden"
+     onclick="if(event.target===this) tutupModalTransaksi()">
+    <div class="absolute inset-0 bg-forest-900/50 backdrop-blur-sm animate-fade-in"></div>
+    <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 z-10">
+        <div class="flex items-center justify-between mb-5">
+            <h2 class="font-bold text-forest text-base">Input Transaksi BUMDes Baru</h2>
+            <button onclick="tutupModalTransaksi()" class="p-2 text-gray-400 hover:text-forest hover:bg-forest-50 rounded-lg transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+
+        <div class="space-y-4">
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1.5">Unit Usaha</label>
+                <select id="trx-unit"
+                        class="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-medium bg-white
+                               focus:outline-none focus:border-forest focus:ring-2 focus:ring-forest/10">
+                    <option value="">Pilih Unit Usaha</option>
+                    @foreach($units as $unit)
+                    <option value="{{ $unit->id }}">{{ $unit->name_unit }} ({{ $unit->sector }})</option>
+                    @endforeach
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1.5">Tanggal Transaksi</label>
+                <input type="date" id="trx-date" value="{{ now()->format('Y-m-d') }}"
+                       class="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-medium
+                              focus:outline-none focus:border-forest focus:ring-2 focus:ring-forest/10">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-2">Jenis Transaksi</label>
+                <div class="flex gap-3">
+                    <label class="flex-1 flex items-center gap-2.5 p-3 border border-gray-200 rounded-xl cursor-pointer hover:border-forest transition-colors has-[:checked]:border-forest has-[:checked]:bg-forest-50">
+                        <input type="radio" name="trx-type" value="Pemasukan" checked class="text-forest focus:ring-forest/20">
+                        <span class="text-xs font-bold text-gray-700">Pemasukan</span>
+                    </label>
+                    <label class="flex-1 flex items-center gap-2.5 p-3 border border-gray-200 rounded-xl cursor-pointer hover:border-red-300 transition-colors has-[:checked]:border-red-400 has-[:checked]:bg-red-50">
+                        <input type="radio" name="trx-type" value="Pengeluaran" class="text-red-500 focus:ring-red-300">
+                        <span class="text-xs font-bold text-gray-700">Pengeluaran</span>
+                    </label>
+                </div>
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1.5">Nominal (Rp)</label>
+                <div class="relative">
+                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-sage-500">Rp</span>
+                    <input type="number" id="trx-nominal" step="1000" min="1" placeholder="0"
+                           class="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold
+                                  focus:outline-none focus:border-forest focus:ring-2 focus:ring-forest/10">
+                </div>
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1.5">Deskripsi</label>
+                <input type="text" id="trx-desc" placeholder="Keterangan singkat transaksi..."
+                       class="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-medium
+                              focus:outline-none focus:border-forest focus:ring-2 focus:ring-forest/10">
+            </div>
+        </div>
+
+        <div class="flex gap-3 mt-6">
+            <button onclick="tutupModalTransaksi()"
+                    class="flex-1 py-2.5 border border-sage-200 text-sage-700 font-semibold rounded-xl text-sm hover:bg-sage-50 transition-all">
+                Batal
+            </button>
+            <button onclick="simpanTransaksi()"
+                    class="flex-1 py-2.5 bg-forest text-white font-bold rounded-xl text-sm
+                           hover:bg-forest-600 active:scale-[0.98] transition-all shadow-md shadow-forest/20">
+                Simpan Transaksi
+            </button>
+        </div>
+    </div>
+</div>
+
+{{-- ============================================================ --}}
+{{-- MODAL SETORAN PADES --}}
+{{-- ============================================================ --}}
+<div id="modal-pades"
+     class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden"
+     onclick="if(event.target===this) tutupModalPades()">
+    <div class="absolute inset-0 bg-forest-900/50 backdrop-blur-sm animate-fade-in"></div>
+    <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 z-10">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="font-bold text-forest text-base">Setoran Kontribusi PADes</h2>
+            <button onclick="tutupModalPades()" class="p-2 text-gray-400 hover:text-forest hover:bg-forest-50 rounded-lg transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+
+        <div class="flex items-start gap-2 mb-4 bg-amber-50 border border-amber-200 rounded-xl p-3">
+            <svg class="w-3.5 h-3.5 text-amber-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <p class="text-[10px] text-amber-700 font-medium leading-relaxed">
+                <strong>PerDes:</strong> Setoran PADes minimal <strong>25% dari total laba bersih bulanan</strong> unit usaha BUMDes. Wajib dilampirkan bukti transfer.
+            </p>
+        </div>
+
+        <div class="space-y-4">
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1.5">Unit Usaha BUMDes</label>
+                <select id="pades-unit"
+                        class="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-medium bg-white
+                               focus:outline-none focus:border-forest focus:ring-2 focus:ring-forest/10">
+                    <option value="">Pilih Unit</option>
+                    @foreach($units as $unit)
+                    <option value="{{ $unit->id }}">{{ $unit->name_unit }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1.5">Periode (Bulan-Tahun)</label>
+                <input type="month" id="pades-period" value="{{ now()->format('Y-m') }}"
+                       class="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-medium
+                              focus:outline-none focus:border-forest focus:ring-2 focus:ring-forest/10">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1.5">Nominal Setoran (Rp)</label>
+                <div class="relative">
+                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-sage-500">Rp</span>
+                    <input type="number" id="pades-nominal" step="1000" min="1" placeholder="0"
+                           class="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold
+                                  focus:outline-none focus:border-forest focus:ring-2 focus:ring-forest/10">
+                </div>
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1.5">
+                    Bukti Transfer
+                    <span class="text-red-500 font-bold">*</span>
+                </label>
+                <label class="flex flex-col items-center gap-2 border-2 border-dashed border-sage-200 rounded-xl p-4 cursor-pointer hover:border-forest hover:bg-forest-50 transition-all">
+                    <svg class="w-6 h-6 text-sage-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                    </svg>
+                    <span class="text-xs font-semibold text-sage-500" id="file-label">Klik atau drag file (PDF/JPG, maks. 5MB)</span>
+                    <input type="file" id="pades-file" accept=".pdf,.jpg,.jpeg,.png" class="hidden"
+                           onchange="document.getElementById('file-label').textContent = this.files[0]?.name || 'Klik atau drag file'">
+                </label>
+            </div>
+        </div>
+
+        <div class="flex gap-3 mt-6">
+            <button onclick="tutupModalPades()"
+                    class="flex-1 py-2.5 border border-sage-200 text-sage-700 font-semibold rounded-xl text-sm hover:bg-sage-50 transition-all">
+                Batal
+            </button>
+            <button onclick="simpanPades()"
+                    class="flex-1 py-2.5 bg-forest text-white font-bold rounded-xl text-sm
+                           hover:bg-forest-600 active:scale-[0.98] transition-all shadow-md shadow-forest/20">
+                Kirim Setoran PADes
+            </button>
+        </div>
+    </div>
+</div>
+@endif
+</div>
 @endsection
 
 @push('scripts')
 <script>
+function bukaModalTransaksi() {
+    const modal = document.getElementById('modal-transaksi');
+    if (modal) modal.classList.remove('hidden');
+}
+function tutupModalTransaksi() {
+    const modal = document.getElementById('modal-transaksi');
+    if (modal) modal.classList.add('hidden');
+    // Clear inputs
+    document.getElementById('trx-unit').value = '';
+    document.getElementById('trx-nominal').value = '';
+    document.getElementById('trx-desc').value = '';
+}
+
+function bukaModalPades() {
+    const modal = document.getElementById('modal-pades');
+    if (modal) modal.classList.remove('hidden');
+}
+function tutupModalPades() {
+    const modal = document.getElementById('modal-pades');
+    if (modal) modal.classList.add('hidden');
+    // Clear inputs
+    document.getElementById('pades-unit').value = '';
+    document.getElementById('pades-nominal').value = '';
+    document.getElementById('pades-file').value = '';
+    document.getElementById('file-label').textContent = 'Klik atau drag file (PDF/JPG, maks. 5MB)';
+}
+
 async function simpanTransaksi() {
     const unitId = document.getElementById('trx-unit').value;
     const date   = document.getElementById('trx-date').value;
@@ -263,8 +369,9 @@ async function simpanTransaksi() {
     });
 
     if (res.ok && res.data.success) {
-        showToast('Transaksi berhasil disimpan.', 'success');
-        setTimeout(() => location.reload(), 1500);
+        tutupModalTransaksi();
+        showSuccessModal('Transaksi Berhasil', 'Transaksi BUMDes baru telah berhasil dicatat ke sistem.', new Date().toLocaleString('id-ID'));
+        setTimeout(() => location.reload(), 2000);
     } else {
         Swal.fire({ icon: 'error', title: 'Gagal', text: res.data.message, confirmButtonColor: '#096b68' });
     }
@@ -296,8 +403,9 @@ async function simpanPades() {
         const json = await res.json();
 
         if (json.success) {
-            showToast('Setoran PADes berhasil disimpan.', 'success');
-            setTimeout(() => location.reload(), 1500);
+            tutupModalPades();
+            showSuccessModal('Setoran Terkirim', 'Laporan setoran PADes dari unit usaha BUMDes berhasil disimpan.', new Date().toLocaleString('id-ID'));
+            setTimeout(() => location.reload(), 2000);
         } else {
             Swal.fire({ icon: 'error', title: 'Validasi Gagal', text: json.message, confirmButtonColor: '#096b68' });
         }

@@ -10,6 +10,14 @@
 @php
     $isActive = request()->routeIs($route) || request()->routeIs($route . '.*');
     $activeClass = $isActive ? 'nav-item-active' : 'text-gray-600 hover:bg-forest-50/60 hover:text-forest border-l-4 border-transparent';
+    
+    $slotStr = (string) $slot;
+    $hasDash = str_contains($slotStr, ' — ');
+    if ($hasDash) {
+        $parts = explode(' — ', $slotStr, 2);
+        $topLabel = trim($parts[0]);
+        $bottomLabel = trim($parts[1]);
+    }
 @endphp
 
 <a href="{{ route($route) }}"
@@ -66,7 +74,14 @@
     </span>
 
     {{-- Label --}}
-    <span class="truncate">{{ $slot }}</span>
+    @if($hasDash)
+        <span class="flex flex-col min-w-0 text-left">
+            <span class="text-[10px] font-medium leading-tight {{ $isActive ? 'text-sage-100/90' : 'text-sage-500' }}">{{ $topLabel }}</span>
+            <span class="text-sm font-medium leading-tight truncate">{{ $bottomLabel }}</span>
+        </span>
+    @else
+        <span class="truncate">{{ $slot }}</span>
+    @endif
 
     {{-- Indikator aktif --}}
     @if($isActive)

@@ -6,7 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Registrasi Administrator — Desa Binangun</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -18,7 +18,7 @@
                     },
                     fontFamily: {
                         sans: ['"Plus Jakarta Sans"', 'sans-serif'],
-                        display: ['"DM Serif Display"', 'serif'],
+                        display: ['"Plus Jakarta Sans"', 'sans-serif'],
                     }
                 }
             }
@@ -27,6 +27,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
     <style>
         :root { color-scheme: light; }
+        .font-display { font-weight: 800; }
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
             background: linear-gradient(135deg, #f7f4e8 0%, #eef6ef 45%, #f6efe2 100%);
@@ -97,7 +98,7 @@
                 @csrf
 
                 <div>
-                    <label class="mb-1 block text-[11px] font-semibold uppercase tracking-[0.25em] text-gray-600">Nama Lengkap</label>
+                    <label class="mb-1 block text-[11px] font-semibold  text-gray-600">Nama Lengkap</label>
                     <input type="text" name="name" id="name"
                            value="{{ old('name') }}"
                            placeholder="Masukkan nama lengkap Anda"
@@ -107,7 +108,7 @@
                 </div>
 
                 <div>
-                    <label class="mb-1 block text-[11px] font-semibold uppercase tracking-[0.25em] text-gray-600">
+                    <label class="mb-1 block text-[11px] font-semibold text-gray-600">
                         NIP Administrator
                         <span class="font-normal text-sage-500">(13 digit)</span>
                     </label>
@@ -123,7 +124,7 @@
                 </div>
 
                 <div>
-                    <label class="mb-1 block text-[11px] font-semibold uppercase tracking-[0.25em] text-gray-600">Alamat Email</label>
+                    <label class="mb-1 block text-[11px] font-semibold text-gray-600">Alamat Email</label>
                     <input type="email" name="email" id="email"
                            value="{{ old('email') }}"
                            placeholder="admin@desabinangun.id"
@@ -133,7 +134,7 @@
                 </div>
 
                 <div>
-                    <label class="mb-1 block text-[11px] font-semibold uppercase tracking-[0.25em] text-gray-600">Kata Sandi</label>
+                    <label class="mb-1 block text-[11px] font-semibold text-gray-600">Kata Sandi</label>
                     <div class="relative">
                         <input type="password" name="password" id="password"
                                placeholder="Min. 8 karakter (huruf besar, kecil, angka)"
@@ -153,7 +154,7 @@
                 </div>
 
                 <div>
-                    <label class="mb-1 block text-[11px] font-semibold uppercase tracking-[0.25em] text-gray-600">Konfirmasi Kata Sandi</label>
+                    <label class="mb-1 block text-[11px] font-semibold text-gray-600">Konfirmasi Kata Sandi</label>
                     <div class="relative">
                         <input type="password" name="password_confirmation" id="password_confirmation"
                                placeholder="Ulangi kata sandi"

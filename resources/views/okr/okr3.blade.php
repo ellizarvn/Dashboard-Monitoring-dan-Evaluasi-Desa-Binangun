@@ -5,7 +5,10 @@
 @section('content')
 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-7">
     <div>
-        <h1 class="font-display text-2xl text-forest">OKR 3 — Peningkatan Kapasitas SDM</h1>
+        <div class="flex flex-col">
+            <span class="text-xs font-bold text-sage-500 uppercase tracking-wider mb-0.5">OKR 3</span>
+            <h1 class="font-display text-2xl text-forest">Peningkatan Kapasitas SDM</h1>
+        </div>
         <p class="text-sm text-sage-600 mt-0.5">Monitoring kompetensi dan keaktifan perangkat desa</p>
     </div>
     @if(isset($capaian['tren_persen']) && $capaian['tren_persen'] != 0)
@@ -23,9 +26,29 @@
 <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
 
     {{-- ============================================================ --}}
-    {{-- FORM INPUT SDM (Kiri) --}}
+    {{-- ALERT TREN & FORM INPUT SDM (Kiri) --}}
     {{-- ============================================================ --}}
     <div class="space-y-5">
+        {{-- Alert Tren --}}
+        @if(isset($capaian['tren_persen']))
+        <div class="flex items-center gap-3 p-4 rounded-xl border
+            {{ $capaian['tren_persen'] > 0 ? 'bg-green-50 border-green-200' : ($capaian['tren_persen'] < 0 ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200') }}">
+            <svg class="w-5 h-5 {{ $capaian['tren_persen'] > 0 ? 'text-green-500' : ($capaian['tren_persen'] < 0 ? 'text-red-500' : 'text-gray-400') }} flex-shrink-0"
+                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="{{ $capaian['tren_persen'] > 0 ? 'M13 7h8m0 0v8m0-8l-8 8-4-4-6 6' : 'M13 17h8m0 0V9m0 8l-8-8-4 4-6-6' }}"/>
+            </svg>
+            <div>
+                <p class="text-sm font-bold {{ $capaian['tren_persen'] > 0 ? 'text-green-700' : ($capaian['tren_persen'] < 0 ? 'text-red-700' : 'text-gray-700') }}">
+                    {{ $capaian['tren_persen'] > 0 ? '+' : '' }}{{ $capaian['tren_persen'] }}% dibanding bulan lalu
+                </p>
+                <p class="text-xs {{ $capaian['tren_persen'] > 0 ? 'text-green-600' : 'text-red-600' }} mt-0.5">
+                    {{ $capaian['tren_persen'] > 0 ? 'Kapasitas SDM terus meningkat. Pertahankan momentum ini.' : 'Perlu perhatian lebih pada program pelatihan.' }}
+                </p>
+            </div>
+        </div>
+        @endif
+
         @if(auth()->user()->canMutateData())
         <div class="bg-white rounded-2xl shadow-card border border-sage-100/60 p-6">
             <h2 class="font-bold text-forest text-sm mb-5">Input Data Kapasitas SDM</h2>
@@ -83,63 +106,12 @@
             </div>
         </div>
         @endif
-
-        {{-- Tabel Riwayat --}}
-        <div class="bg-white rounded-2xl shadow-card border border-sage-100/60 overflow-hidden">
-            <div class="px-6 py-4 border-b border-sage-100/60">
-                <h2 class="font-bold text-forest text-sm">Riwayat Data SDM {{ now()->year }}</h2>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-xs">
-                    <thead>
-                        <tr class="bg-forest-50/30 border-b border-sage-100/60">
-                            <th class="text-left px-5 py-3 font-bold text-forest text-[11px] uppercase tracking-wide">Periode</th>
-                            <th class="text-right px-4 py-3 font-bold text-forest text-[11px] uppercase tracking-wide">Staf</th>
-                            <th class="text-right px-4 py-3 font-bold text-forest text-[11px] uppercase tracking-wide">Kompetensi</th>
-                            <th class="text-right px-4 py-3 font-bold text-forest text-[11px] uppercase tracking-wide">Keaktifan</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-sage-50">
-                        @forelse($history as $row)
-                        <tr class="hover:bg-forest-50/20 transition-colors">
-                            <td class="px-5 py-3 font-semibold text-gray-800">{{ $row->period_date->format('M Y') }}</td>
-                            <td class="px-4 py-3 text-right font-medium text-gray-600">{{ $row->total_staf_terlatih }}/{{ $row->total_perangkat }}</td>
-                            <td class="px-4 py-3 text-right font-black text-forest">{{ $row->avg_competency_score }}/10</td>
-                            <td class="px-4 py-3 text-right font-black text-forest">{{ $row->keaktifan_kinerja_persen }}%</td>
-                        </tr>
-                        @empty
-                        <tr><td colspan="4" class="px-5 py-8 text-center text-xs text-gray-400">Belum ada data SDM.</td></tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-        </div>
     </div>
 
     {{-- ============================================================ --}}
-    {{-- 3 PROGRESS CIRCLES (Kanan) --}}
+    {{-- ANALITIK & TABEL RIWAYAT (Kanan) --}}
     {{-- ============================================================ --}}
     <div class="space-y-5">
-        {{-- Alert Tren --}}
-        @if(isset($capaian['tren_persen']))
-        <div class="flex items-center gap-3 p-4 rounded-xl border
-            {{ $capaian['tren_persen'] > 0 ? 'bg-green-50 border-green-200' : ($capaian['tren_persen'] < 0 ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200') }}">
-            <svg class="w-5 h-5 {{ $capaian['tren_persen'] > 0 ? 'text-green-500' : ($capaian['tren_persen'] < 0 ? 'text-red-500' : 'text-gray-400') }} flex-shrink-0"
-                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="{{ $capaian['tren_persen'] > 0 ? 'M13 7h8m0 0v8m0-8l-8 8-4-4-6 6' : 'M13 17h8m0 0V9m0 8l-8-8-4 4-6-6' }}"/>
-            </svg>
-            <div>
-                <p class="text-sm font-bold {{ $capaian['tren_persen'] > 0 ? 'text-green-700' : ($capaian['tren_persen'] < 0 ? 'text-red-700' : 'text-gray-700') }}">
-                    {{ $capaian['tren_persen'] > 0 ? '+' : '' }}{{ $capaian['tren_persen'] }}% dibanding bulan lalu
-                </p>
-                <p class="text-xs {{ $capaian['tren_persen'] > 0 ? 'text-green-600' : 'text-red-600' }} mt-0.5">
-                    {{ $capaian['tren_persen'] > 0 ? 'Kapasitas SDM terus meningkat. Pertahankan momentum ini.' : 'Perlu perhatian lebih pada program pelatihan.' }}
-                </p>
-            </div>
-        </div>
-        @endif
-
         {{-- 3 Radial Progress Circles --}}
         <div class="bg-white rounded-2xl shadow-card border border-sage-100/60 p-6">
             <h2 class="font-bold text-forest text-sm mb-6">Analitik Kapasitas SDM Real-Time</h2>
@@ -150,7 +122,7 @@
                     ['Keaktifan Kinerja', $capaian['skor_keaktifan'] ?? 0, 'chart-sdm-aktif'],
                 ] as [$lbl, $val, $chartId])
                 <div class="flex flex-col items-center gap-3">
-                    <div class="relative">
+                    <div class="relative w-[90px] h-[90px]">
                         <canvas id="{{ $chartId }}" width="90" height="90"
                                 data-value="{{ round($val, 1) }}"
                                 data-color="{{ $val >= 75 ? '#096b68' : ($val >= 60 ? '#87A996' : '#f59e0b') }}">
@@ -182,6 +154,37 @@
                 @endforeach
             </div>
             @endif
+        </div>
+
+        {{-- Tabel Riwayat --}}
+        <div class="bg-white rounded-2xl shadow-card border border-sage-100/60 overflow-hidden">
+            <div class="px-6 py-4 border-b border-sage-100/60">
+                <h2 class="font-bold text-forest text-sm">Riwayat Data SDM {{ now()->year }}</h2>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-xs">
+                    <thead>
+                        <tr class="bg-forest-50/30 border-b border-sage-100/60">
+                            <th class="text-left px-5 py-3 font-bold text-forest text-[11px] uppercase tracking-wide">Periode</th>
+                            <th class="text-right px-4 py-3 font-bold text-forest text-[11px] uppercase tracking-wide">Staf</th>
+                            <th class="text-right px-4 py-3 font-bold text-forest text-[11px] uppercase tracking-wide">Kompetensi</th>
+                            <th class="text-right px-4 py-3 font-bold text-forest text-[11px] uppercase tracking-wide">Keaktifan</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-sage-50">
+                        @forelse($history as $row)
+                        <tr class="hover:bg-forest-50/20 transition-colors">
+                            <td class="px-5 py-3 font-semibold text-gray-800">{{ $row->period_date->format('M Y') }}</td>
+                            <td class="px-4 py-3 text-right font-medium text-gray-600">{{ $row->total_staf_terlatih }}/{{ $row->total_perangkat }}</td>
+                            <td class="px-4 py-3 text-right font-black text-forest">{{ $row->avg_competency_score }}/10</td>
+                            <td class="px-4 py-3 text-right font-black text-forest">{{ $row->keaktifan_kinerja_persen }}%</td>
+                        </tr>
+                        @empty
+                        <tr><td colspan="4" class="px-5 py-8 text-center text-xs text-gray-400">Belum ada data SDM.</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>

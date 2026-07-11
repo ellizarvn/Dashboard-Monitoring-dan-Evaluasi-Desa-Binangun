@@ -9,14 +9,17 @@
         <p class="text-sm text-sage-600 mt-0.5">Manajemen dan monitoring seluruh program kegiatan desa</p>
     </div>
     @if(auth()->user()->canMutateData())
-    <button onclick="bukaModalProgram()"
-            class="flex items-center gap-2 bg-forest text-white text-sm font-bold px-5 py-2.5 rounded-xl
-                   hover:bg-forest-600 active:scale-[0.98] transition-all shadow-md shadow-forest/20">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
-        </svg>
-        Program Baru
-    </button>
+    <div class="flex items-center gap-2 flex-wrap">
+        <button onclick="bukaModalImport()"
+                class="flex items-center gap-2 border border-forest text-forest hover:bg-forest-50 text-sm font-bold px-5 py-2.5 rounded-xl
+                       active:scale-[0.98] transition-all shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+            </svg>
+            Import Excel (CSV)
+        </button>
+
+    </div>
     @endif
 </div>
 
@@ -70,7 +73,7 @@
                     <select id="prog-okr"
                             class="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm font-medium bg-white
                                    focus:outline-none focus:border-forest focus:ring-2 focus:ring-forest/10">
-                        <option value="">-- Pilih OKR --</option>
+                        <option value="">Pilih OKR</option>
                         <option value="OKR1">OKR 1 — Partisipasi & Kegiatan</option>
                         <option value="OKR2">OKR 2 — Ekonomi BUMDes</option>
                         <option value="OKR3">OKR 3 — Kapasitas SDM</option>
@@ -285,6 +288,56 @@
         @endif
     </div>
 </div>
+
+{{-- ============================================================ --}}
+{{-- MODAL IMPORT CSV --}}
+{{-- ============================================================ --}}
+<div id="modal-import"
+     class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden"
+     onclick="if(event.target===this) tutupModalImport()">
+    <div class="absolute inset-0 bg-forest-900/50 backdrop-blur-sm"></div>
+    <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 z-10">
+        <div class="flex items-center justify-between mb-5">
+            <h2 class="font-bold text-forest text-base">Import Program Desa (CSV)</h2>
+            <button onclick="tutupModalImport()" class="p-2 text-gray-400 hover:text-forest hover:bg-forest-50 rounded-lg transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+
+        <div class="space-y-4">
+            <p class="text-xs text-gray-500 leading-relaxed">
+                Pilih berkas template CSV yang sudah diisi data program. Pastikan kolom sesuai dengan format: 
+                <code class="bg-gray-100 px-1.5 py-0.5 rounded font-mono text-[10px] text-forest">Nama Program; Terhubung OKR; Status; Progress Realisasi; Deskripsi</code>.
+            </p>
+
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1.5">Berkas CSV</label>
+                <input type="file" id="import-file" accept=".csv,text/csv"
+                       class="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-medium
+                              file:mr-4 file:py-1.5 file:px-4 file:rounded-xl file:border-0
+                              file:text-xs file:font-bold file:bg-forest-50 file:text-forest
+                              hover:file:bg-forest-100 file:cursor-pointer cursor-pointer">
+            </div>
+        </div>
+
+        <div class="flex gap-3 mt-6">
+            <button onclick="unduhTemplateCSV()"
+                    class="flex-1 py-2.5 border border-sage-200 text-sage-700 font-semibold rounded-xl text-sm hover:bg-sage-50 transition-all flex items-center justify-center gap-1.5">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                </svg>
+                Unduh Template
+            </button>
+            <button onclick="prosesImportCSV()"
+                    class="flex-1 py-2.5 bg-forest text-white font-bold rounded-xl text-sm
+                           hover:bg-forest-600 active:scale-[0.98] transition-all shadow-md shadow-forest/20">
+                Mulai Import
+            </button>
+        </div>
+    </div>
+</div>
 @endsection
 
 @push('scripts')
@@ -384,6 +437,109 @@ async function hapusProgram(id, name) {
         setTimeout(() => location.reload(), 1500);
     } else {
         showToast(res.data.message || 'Gagal menghapus program.', 'error');
+    }
+}
+
+/* ---- Import Excel (CSV) JavaScript Helpers ---- */
+function bukaModalImport() {
+    document.getElementById('modal-import').classList.remove('hidden');
+}
+
+function tutupModalImport() {
+    document.getElementById('modal-import').classList.add('hidden');
+    document.getElementById('import-file').value = '';
+}
+
+function unduhTemplateCSV() {
+    const headers = "Nama Program;Terhubung OKR;Status;Progress Realisasi;Deskripsi\r\n";
+    const row1 = "Pembangunan Irigasi Tersier;OKR1;AKTIF;60;Saluran irigasi pembagi air sawah warga\r\n";
+    const row2 = "Pelatihan Kepemimpinan Staf;OKR3;PENDING;0;Pelatihan manajemen administrasi desa\r\n";
+    const row3 = "Modal Awal BUMDes Unit Dagang;OKR2;SELESAI;100;Penyertaan modal unit usaha sembako\r\n";
+    
+    // Gunakan BOM \uFEFF agar Excel dapat langsung membaca format UTF-8 dengan baik
+    const csvContent = "\uFEFF" + headers + row1 + row2 + row3;
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", "template_import_program.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+async function prosesImportCSV() {
+    const fileInput = document.getElementById('import-file');
+    const file = fileInput.files[0];
+    if (!file) {
+        Swal.fire({ icon: 'warning', title: 'Pilih Berkas', text: 'Silakan pilih berkas CSV terlebih dahulu.', confirmButtonColor: '#096b68' });
+        return;
+    }
+
+    Swal.fire({
+        title: 'Mengimpor Data...',
+        text: 'Sedang memproses berkas CSV program desa.',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+
+    const formData = new FormData();
+    formData.append('file_import', file);
+
+    try {
+        const response = await fetch('{{ route('programs.import') }}', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json'
+            },
+            body: formData
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result.success) {
+            tutupModalImport();
+            let msg = result.message;
+            if (result.errors && result.errors.length > 0) {
+                msg += "<br><br><strong>Peringatan beberapa baris tidak valid:</strong><br><ul class='list-disc text-left pl-4 max-h-40 overflow-y-auto text-xs space-y-1 text-amber-700'>";
+                result.errors.forEach(err => {
+                    msg += `<li>${err}</li>`;
+                });
+                msg += "</ul>";
+                
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Impor Berhasil dengan Catatan',
+                    html: `<div class="text-sm text-gray-600">${msg}</div>`,
+                    confirmButtonColor: '#096b68'
+                }).then(() => {
+                    location.reload();
+                });
+            } else {
+                showSuccessModal('Impor Berhasil', msg, new Date().toLocaleString('id-ID'));
+                setTimeout(() => location.reload(), 2000);
+            }
+        } else {
+            let errMsg = result.message || 'Gagal memproses impor berkas.';
+            if (result.errors && result.errors.length > 0) {
+                errMsg += "<br><br><strong class='text-red-600'>Detail Kesalahan:</strong><br><ul class='list-disc text-left pl-4 max-h-40 overflow-y-auto text-xs space-y-1 text-red-500'>";
+                result.errors.forEach(err => {
+                    errMsg += `<li>${err}</li>`;
+                });
+                errMsg += "</ul>";
+            }
+            Swal.fire({
+                icon: 'error',
+                title: 'Impor Gagal',
+                html: `<div class="text-sm text-gray-600">${errMsg}</div>`,
+                confirmButtonColor: '#096b68'
+            });
+        }
+    } catch (err) {
+        Swal.fire({ icon: 'error', title: 'Kesalahan Sistem', text: 'Koneksi gagal atau sesi habis. Silakan coba kembali.', confirmButtonColor: '#096b68' });
     }
 }
 </script>

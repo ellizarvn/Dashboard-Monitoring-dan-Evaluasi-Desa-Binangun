@@ -205,7 +205,7 @@
         ] as [$key, $label, $sublabel, $capaian, $status, $indicators])
         <div class="flex flex-col sm:flex-row items-center gap-5 p-5 bg-forest-50/40 rounded-2xl border border-sage-100/60">
             {{-- Radial Chart --}}
-            <div class="relative flex-shrink-0">
+            <div class="relative flex-shrink-0 w-[90px] h-[90px]">
                 <canvas id="chart-{{ $key }}" width="90" height="90"
                         data-value="{{ $capaian }}"
                         data-color="{{ $capaian >= 80 ? '#096b68' : ($capaian >= 60 ? '#87A996' : '#f59e0b') }}">

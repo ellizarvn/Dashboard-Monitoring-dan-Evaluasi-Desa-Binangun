@@ -5,14 +5,17 @@
 @section('content')
 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-7">
     <div>
-        <h1 class="font-display text-2xl text-forest">OKR 1 — Partisipasi Masyarakat</h1>
+        <div class="flex flex-col">
+            <span class="text-xs font-bold text-sage-500 uppercase tracking-wider mb-0.5">OKR 1</span>
+            <h1 class="font-display text-2xl text-forest">Partisipasi Masyarakat</h1>
+        </div>
         <p class="text-sm text-sage-600 mt-0.5">Monitoring partisipasi dan kegiatan desa tahun {{ $year }}</p>
     </div>
     <div class="flex items-center gap-2">
         <span class="text-xs font-bold px-3 py-1.5 rounded-full
             {{ $capaian['status'] === 'ON TRACK' ? 'bg-green-50 text-green-700' :
                ($capaian['status'] === 'AT RISK' ? 'bg-amber-50 text-amber-700' : 'bg-red-50 text-red-600') }}">
-            {{ $capaian['status'] }} — {{ $capaian['avg_partisipasi'] }}%
+            {{ $capaian['status'] }} {{ $capaian['avg_partisipasi'] }}%
         </span>
     </div>
 </div>

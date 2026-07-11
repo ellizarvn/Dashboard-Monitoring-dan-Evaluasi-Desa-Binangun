@@ -6,10 +6,10 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Dashboard') — Desa Binangun</title>
 
-    {{-- Google Fonts: Plus Jakarta Sans + DM Serif Display --}}
+    {{-- Google Fonts: Plus Jakarta Sans --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
     {{-- Tailwind CSS v4 via CDN --}}
     <script src="https://cdn.tailwindcss.com"></script>
@@ -24,7 +24,7 @@
                     },
                     fontFamily: {
                         sans:    ['"Plus Jakarta Sans"', 'sans-serif'],
-                        display: ['"DM Serif Display"', 'serif'],
+                        display: ['"Plus Jakarta Sans"', 'sans-serif'],
                     },
                     boxShadow: {
                         'card': '0 1px 3px 0 rgba(26,54,43,0.08), 0 4px 16px -4px rgba(26,54,43,0.06)',
@@ -45,6 +45,7 @@
     <style>
         * { box-sizing: border-box; }
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .font-display { font-weight: 700; }
 
         /* Scrollbar kustom hijau */
         ::-webkit-scrollbar { width: 6px; height: 6px; }

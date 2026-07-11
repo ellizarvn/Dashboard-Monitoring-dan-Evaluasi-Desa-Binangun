@@ -151,4 +151,177 @@ class ProgramController extends Controller
     {
         return response()->json(['success' => true, 'data' => $program]);
     }
+
+    /**
+     * Mengimpor program desa dari berkas Excel (CSV).
+     */
+    public function import(Request $request): JsonResponse
+    {
+        if (!Auth::user()->canMutateData()) {
+            $this->auditLogService->logUnauthorizedAccess('Program Desa', 'Import Program CSV');
+            return response()->json(['success' => false, 'message' => 'Akses ditolak.'], 403);
+        }
+
+        $request->validate([
+            'file_import' => ['required', 'file', 'mimes:csv,txt,xlsx,xls', 'max:5120'],
+        ]);
+
+        $file = $request->file('file_import');
+        $filePath = $file->getRealPath();
+        $extension = strtolower($file->getClientOriginalExtension());
+
+        if (in_array($extension, ['xlsx', 'xls'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Format file Excel (.xlsx/.xls) belum didukung langsung. Harap simpan sebagai berkas CSV (Comma/Semicolon delimited) terlebih dahulu lalu coba unggah kembali.'
+            ], 422);
+        }
+
+        // Deteksi pembatas (delimiter) koma atau titik koma
+        $delimiter = ',';
+        if (($handle = fopen($filePath, 'r')) !== false) {
+            $firstLine = fgets($handle);
+            if (str_contains($firstLine, ';')) {
+                $delimiter = ';';
+            }
+            fclose($handle);
+        }
+
+        $importedCount = 0;
+        $errors = [];
+
+        if (($handle = fopen($filePath, 'r')) !== false) {
+            // Membaca header kolom
+            $header = fgetcsv($handle, 0, $delimiter);
+            if (!$header) {
+                fclose($handle);
+                return response()->json(['success' => false, 'message' => 'Berkas CSV kosong atau tidak valid.'], 422);
+            }
+
+            // Hapus karakter BOM UTF-8 jika ada pada nama kolom pertama
+            $header[0] = preg_replace('/[\x{0000}-\x{001F}\x{007F}-\x{009F}\x{FEFF}]/u', '', $header[0]);
+
+            // Petakan kolom ke index array
+            $headerMap = [];
+            foreach ($header as $index => $colName) {
+                $colClean = strtolower(trim($colName));
+                $headerMap[$colClean] = $index;
+            }
+
+            // Temukan index berdasarkan aliases
+            $idxName     = $this->findHeaderIndex($headerMap, ['nama program', 'nama_program', 'nama', 'program']);
+            $idxOkr      = $this->findHeaderIndex($headerMap, ['terhubung okr', 'terhubung_okr', 'okr']);
+            $idxStatus   = $this->findHeaderIndex($headerMap, ['status', 'status program', 'status_program']);
+            $idxProgress = $this->findHeaderIndex($headerMap, ['progress realisasi', 'progress_realisasi', 'progress', 'realisasi', 'persentase']);
+            $idxDesc     = $this->findHeaderIndex($headerMap, ['deskripsi', 'description', 'keterangan', 'detail']);
+
+            if ($idxName === null || $idxOkr === null || $idxStatus === null || $idxProgress === null) {
+                fclose($handle);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Struktur kolom berkas tidak sesuai template. Kolom wajib: "Nama Program", "Terhubung OKR", "Status", dan "Progress Realisasi".'
+                ], 422);
+            }
+
+            $rowNum = 1;
+            \Illuminate\Support\Facades\DB::beginTransaction();
+            try {
+                while (($row = fgetcsv($handle, 0, $delimiter)) !== false) {
+                    $rowNum++;
+
+                    // Lewati baris kosong
+                    if (count($row) === 1 && empty($row[0])) {
+                        continue;
+                    }
+
+                    $name     = isset($row[$idxName]) ? trim($row[$idxName]) : '';
+                    $okr      = isset($row[$idxOkr]) ? strtoupper(trim($row[$idxOkr])) : '';
+                    $status   = isset($row[$idxStatus]) ? strtoupper(trim($row[$idxStatus])) : '';
+                    $progress = isset($row[$idxProgress]) ? trim($row[$idxProgress]) : '0';
+                    $desc     = ($idxDesc !== null && isset($row[$idxDesc])) ? trim($row[$idxDesc]) : '';
+
+                    // Normalisasi spasi OKR (contoh: OKR 1 -> OKR1)
+                    $okr = str_replace(' ', '', $okr);
+
+                    // Validasi baris data
+                    if (empty($name) || strlen($name) < 5) {
+                        $errors[] = "Baris {$rowNum}: Nama program terlalu pendek (min. 5 karakter).";
+                        continue;
+                    }
+                    if (!in_array($okr, ['OKR1', 'OKR2', 'OKR3'])) {
+                        $errors[] = "Baris {$rowNum}: 'Terhubung OKR' tidak valid (harus OKR1/OKR2/OKR3).";
+                        continue;
+                    }
+                    if (!in_array($status, ['AKTIF', 'PENDING', 'SELESAI'])) {
+                        $errors[] = "Baris {$rowNum}: Status tidak valid (harus AKTIF/PENDING/SELESAI).";
+                        continue;
+                    }
+
+                    $progressVal = (int) $progress;
+                    if ($status === 'SELESAI') {
+                        $progressVal = 100;
+                    }
+                    if ($progressVal < 0 || $progressVal > 100) {
+                        $errors[] = "Baris {$rowNum}: Progress harus bernilai antara 0-100.";
+                        continue;
+                    }
+
+                    // Insert or Update program desa
+                    VillageProgram::updateOrCreate(
+                        ['name' => $name],
+                        [
+                            'linked_okr'          => $okr,
+                            'status'              => $status,
+                            'progress_percentage' => $progressVal,
+                            'description'         => $desc ?: null,
+                        ]
+                    );
+                    $importedCount++;
+                }
+
+                if (count($errors) > 0 && $importedCount === 0) {
+                    \Illuminate\Support\Facades\DB::rollBack();
+                    fclose($handle);
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Gagal mengimpor data. Semua baris tidak valid:',
+                        'errors'  => $errors
+                    ], 422);
+                }
+
+                \Illuminate\Support\Facades\DB::commit();
+                fclose($handle);
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\DB::rollBack();
+                fclose($handle);
+                return response()->json(['success' => false, 'message' => 'Terjadi kesalahan sistem saat menyimpan: ' . $e->getMessage()], 500);
+            }
+        }
+
+        // Catat Audit Log
+        $this->auditLogService->logBerhasil(
+            'CREATE DATA',
+            'Program Desa',
+            "Impor data program desa berhasil: {$importedCount} program berhasil dimasukkan."
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => "Berhasil mengimpor {$importedCount} data program.",
+            'errors'  => $errors // Kembalikan baris error sebagai peringatan non-blocking jika ada data sukses
+        ]);
+    }
+
+    /**
+     * Cari index kolom dengan beberapa varian nama.
+     */
+    private function findHeaderIndex(array $headerMap, array $aliases): ?int
+    {
+        foreach ($aliases as $alias) {
+            if (isset($headerMap[$alias])) {
+                return $headerMap[$alias];
+            }
+        }
+        return null;
+    }
 }

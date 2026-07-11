@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Login — Portal Desa Binangun</title>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -15,7 +15,7 @@
                         forest: { DEFAULT: '#096b68', 50: '#E6F5F4', 100: '#CCE7E6' },
                         sage: { DEFAULT: '#87A996', 200: '#CCE0D8', 500: '#87A996' },
                     },
-                    fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'], display: ['"DM Serif Display"', 'serif'] }
+                    fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'], display: ['"Plus Jakarta Sans"', 'sans-serif'] }
                 }
             }
         }
@@ -23,6 +23,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
     <style>
         :root { color-scheme: light; }
+        .font-display { font-weight: 800; }
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
             background: linear-gradient(135deg, #f8f4e8 0%, #eef6ef 45%, #f6efe2 100%);
@@ -94,14 +95,14 @@
                     @csrf
 
                     <div>
-                        <label class="mb-2 block text-xs font-semibold uppercase tracking-[0.25em] text-gray-600">Email Administrator</label>
+                        <label class="mb-2 block text-xs font-semibold text-gray-600">Email Administrator</label>
                         <input type="email" name="email" value="{{ old('email') }}"
                                placeholder="admin@desabinangun.id"
                                class="input-field" required autofocus>
                     </div>
 
                     <div>
-                        <label class="mb-2 block text-xs font-semibold uppercase tracking-[0.25em] text-gray-600">Kata Sandi</label>
+                        <label class="mb-2 block text-xs font-semibold text-gray-600">Kata Sandi</label>
                         <div class="relative">
                             <input type="password" name="password" id="pwd"
                                    placeholder="Masukkan kata sandi Anda"

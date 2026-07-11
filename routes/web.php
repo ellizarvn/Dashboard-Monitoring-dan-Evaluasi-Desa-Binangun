@@ -105,12 +105,14 @@ Route::middleware(['auth'])->group(function () {
     // ============================================================
     Route::prefix('program')->name('programs.')->group(function () {
         Route::get('/', [ProgramController::class, 'index'])->name('index');
-        Route::get('/{program}', [ProgramController::class, 'show'])->name('show');
 
         Route::middleware('role:admin,tim_monitoring')->group(function () {
+            Route::post('/import', [ProgramController::class, 'import'])->name('import');
             Route::post('/', [ProgramController::class, 'store'])->name('store');
             Route::put('/{program}', [ProgramController::class, 'update'])->name('update');
         });
+
+        Route::get('/{program}', [ProgramController::class, 'show'])->name('show');
 
         Route::middleware('role:admin')->group(function () {
             Route::delete('/{program}', [ProgramController::class, 'destroy'])->name('destroy');
@@ -122,6 +124,7 @@ Route::middleware(['auth'])->group(function () {
     // ============================================================
     Route::prefix('laporan')->name('reports.')->group(function () {
         Route::get('/', [ReportController::class, 'index'])->name('index');
+        Route::get('/export-csv', [ReportController::class, 'exportCsv'])->name('export.csv');
 
         Route::middleware('role:admin,tim_monitoring,kepala_desa')->group(function () {
             Route::post('/', [ReportController::class, 'store'])->name('store');
