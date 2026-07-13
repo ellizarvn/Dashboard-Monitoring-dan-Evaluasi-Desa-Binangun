@@ -31,8 +31,8 @@ class AuditLogController extends Controller
      */
     public function index(Request $request): View
     {
-        // Otorisasi: hanya admin dan kepala desa
-        if (!in_array(Auth::user()->role, ['admin', 'kepala_desa'])) {
+        // Otorisasi: hanya Super Admin
+        if (!Auth::user()->isSuperAdmin()) {
             $this->auditLogService->logUnauthorizedAccess('Audit Log', 'Akses Halaman Log');
             abort(403, 'Anda tidak memiliki akses ke halaman ini.');
         }
@@ -56,7 +56,7 @@ class AuditLogController extends Controller
      */
     public function exportCsv(Request $request): StreamedResponse|JsonResponse
     {
-        if (!Auth::user()->isAdmin()) {
+        if (!Auth::user()->isSuperAdmin()) {
             $this->auditLogService->logUnauthorizedAccess('Audit Log', 'Export CSV');
             return response()->json(['success' => false, 'message' => 'Akses ditolak.'], 403);
         }

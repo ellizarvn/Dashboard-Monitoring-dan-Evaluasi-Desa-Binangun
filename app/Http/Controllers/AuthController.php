@@ -28,78 +28,6 @@ class AuthController extends Controller
     ) {}
 
     // ============================================================
-    // REGISTRASI
-    // ============================================================
-
-    /**
-     * Tampilkan form registrasi administrator (split screen layout).
-     */
-    public function showRegister(): View
-    {
-        return view('auth.register');
-    }
-
-    /**
-     * Proses registrasi administrator baru.
-     * Hanya role 'admin' yang bisa mendaftar melalui halaman ini.
-     */
-    public function register(Request $request): \Illuminate\Http\JsonResponse|RedirectResponse
-    {
-        $validator = Validator::make($request->all(), [
-            'name'                  => ['required', 'string', 'min:3', 'max:100'],
-            'nip_administrator'     => ['required', 'string', 'size:13', 'unique:users,nip_administrator', 'regex:/^\d{13}$/'],
-            'email'                 => ['required', 'email', 'unique:users,email', 'max:150'],
-            'password'              => ['required', 'string', 'min:8', 'confirmed', 'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/'],
-            'syarat_transparansi'   => ['accepted'],
-        ], [
-            'nip_administrator.size'    => 'NIP harus tepat 13 digit angka.',
-            'nip_administrator.regex'   => 'NIP hanya boleh berisi angka.',
-            'nip_administrator.unique'  => 'NIP ini sudah terdaftar dalam sistem.',
-            'password.regex'            => 'Kata sandi harus mengandung huruf besar, huruf kecil, dan angka.',
-            'syarat_transparansi.accepted' => 'Anda wajib menyetujui Syarat Transparansi & Protokol Privasi.',
-        ]);
-
-        if ($validator->fails()) {
-            if ($request->expectsJson()) {
-                return response()->json(['errors' => $validator->errors()], 422);
-            }
-            return back()->withErrors($validator)->withInput($request->except('password', 'password_confirmation'));
-        }
-
-        $user = User::create([
-            'name'               => $request->name,
-            'nip_administrator'  => $request->nip_administrator,
-            'email'              => $request->email,
-            'password'           => Hash::make($request->password),
-            'role'               => 'admin',
-            'two_factor_enabled' => false,
-        ]);
-
-        // Catat ke audit log (tanpa login dulu)
-        $this->auditLogService->logBerhasil(
-            'CREATE DATA',
-            'Auth',
-            "Registrasi administrator baru: {$user->name} (NIP: {$user->nip_administrator})",
-            $user->id
-        );
-
-        if ($request->expectsJson()) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Registrasi berhasil',
-                'data'    => ['email' => $user->email, 'nip' => $user->nip_administrator],
-            ]);
-        }
-
-        // Redirect dengan session flash untuk memicu modal berhasil
-        return redirect()->route('auth.login')
-            ->with('registration_success', [
-                'email' => $user->email,
-                'nip'   => $user->nip_administrator,
-            ]);
-    }
-
-    // ============================================================
     // LOGIN & LOGOUT
     // ============================================================
 
@@ -140,6 +68,25 @@ class AuthController extends Controller
 
         /** @var User $user */
         $user = Auth::user();
+
+        // Validasi keaktifan akun
+        if (!$user->is_active) {
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            $this->auditLogService->logGagal(
+                'LOGIN',
+                'Auth',
+                "Percobaan login gagal: Akun ditangguhkan (Email: {$request->email})",
+                $user->id
+            );
+
+            return back()
+                ->withErrors(['email' => 'Akun Anda dinonaktifkan. Hubungi Super Admin.'])
+                ->withInput($request->only('email'));
+        }
+
         $request->session()->regenerate();
 
         // Catat login berhasil ke audit log
@@ -168,7 +115,7 @@ class AuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('auth.login')->with('logged_out', true);
+        return redirect()->route('login')->with('logged_out', true);
     }
 
     // ============================================================

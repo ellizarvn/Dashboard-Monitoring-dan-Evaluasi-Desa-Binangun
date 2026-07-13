@@ -25,7 +25,8 @@ class User extends Authenticatable
 
     protected $fillable = [
         'name', 'email', 'password', 'phone', 'photo',
-        'role', 'nip_administrator', 'two_factor_enabled', 'two_factor_secret',
+        'role', 'jabatan', 'is_active', 'nip_administrator', 
+        'two_factor_enabled', 'two_factor_secret',
     ];
 
     protected $hidden = ['password', 'remember_token', 'two_factor_secret'];
@@ -36,6 +37,7 @@ class User extends Authenticatable
             'email_verified_at'   => 'datetime',
             'password'            => 'hashed',
             'two_factor_enabled'  => 'boolean',
+            'is_active'           => 'boolean',
         ];
     }
 
@@ -51,32 +53,60 @@ class User extends Authenticatable
         return $this->hasMany(SystemLog::class, 'user_id');
     }
 
-    // ---- Helper Role ----
+    // ---- Helper Role & Accessors ----
+
+    public function isSuperAdmin(): bool
+    {
+        return $this->getRawOriginal('role') === 'super_admin';
+    }
+
+    public function getDbRoleAttribute(): string
+    {
+        return $this->getRawOriginal('role') ?? 'admin';
+    }
+
+    /**
+     * Override getter role untuk kompatibilitas ke belakang (RBAC lama).
+     * Memetakan admin+jabatan ke role lama (admin, kepala_desa, tim_monitoring, bpd).
+     */
+    public function getRoleAttribute($value): string
+    {
+        if ($value === 'super_admin') {
+            return 'super_admin';
+        }
+        return match ($this->jabatan) {
+            'Administrator'  => 'admin',
+            'Kepala Desa'    => 'kepala_desa',
+            'Tim Monitoring' => 'tim_monitoring',
+            'BPD'            => 'bpd',
+            default          => 'tim_monitoring',
+        };
+    }
 
     public function isAdmin(): bool
     {
-        return $this->role === 'admin';
+        return $this->isSuperAdmin() || ($this->getRawOriginal('role') === 'admin' && $this->jabatan === 'Administrator');
     }
 
     public function isKepala(): bool
     {
-        return $this->role === 'kepala_desa';
+        return $this->isSuperAdmin() || ($this->getRawOriginal('role') === 'admin' && $this->jabatan === 'Kepala Desa');
     }
 
     public function isBpd(): bool
     {
-        return $this->role === 'bpd';
+        return $this->isSuperAdmin() || ($this->getRawOriginal('role') === 'admin' && $this->jabatan === 'BPD');
     }
 
     public function isMonitoring(): bool
     {
-        return $this->role === 'tim_monitoring';
+        return $this->isSuperAdmin() || ($this->getRawOriginal('role') === 'admin' && $this->jabatan === 'Tim Monitoring');
     }
 
     /** Cek apakah user bisa mengubah data (bukan read-only) */
     public function canMutateData(): bool
     {
-        return in_array($this->role, ['admin', 'tim_monitoring']);
+        return $this->isSuperAdmin() || ($this->getRawOriginal('role') === 'admin' && in_array($this->jabatan, ['Administrator', 'Tim Monitoring']));
     }
 
     /** Dapatkan inisial untuk avatar */
@@ -86,15 +116,12 @@ class User extends Authenticatable
         return strtoupper(substr($parts[0], 0, 1) . (isset($parts[1]) ? substr($parts[1], 0, 1) : ''));
     }
 
-    /** Label role dalam Bahasa Indonesia */
+    /** Label role/jabatan dalam Bahasa Indonesia */
     public function getRoleLabelAttribute(): string
     {
-        return match ($this->role) {
-            'admin'          => 'Administrator',
-            'kepala_desa'    => 'Kepala Desa',
-            'tim_monitoring' => 'Tim Monitoring',
-            'bpd'            => 'BPD',
-            default          => 'Pengguna',
-        };
+        if ($this->isSuperAdmin()) {
+            return 'Super Admin';
+        }
+        return $this->jabatan ?? 'Pengguna';
     }
 }

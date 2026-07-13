@@ -131,6 +131,7 @@
                     <th class="text-center px-4 py-3.5 font-bold text-forest text-[11px] uppercase tracking-wide">Jenis</th>
                     <th class="text-center px-4 py-3.5 font-bold text-forest text-[11px] uppercase tracking-wide">Tanggal</th>
                     <th class="text-left px-4 py-3.5 font-bold text-forest text-[11px] uppercase tracking-wide">Penulis</th>
+                    <th class="text-left px-4 py-3.5 font-bold text-forest text-[11px] uppercase tracking-wide">File</th>
                     <th class="text-center px-4 py-3.5 font-bold text-forest text-[11px] uppercase tracking-wide">Status</th>
                     <th class="text-center px-4 py-3.5 font-bold text-forest text-[11px] uppercase tracking-wide">Aksi</th>
                 </tr>
@@ -165,6 +166,22 @@
                         </div>
                     </td>
 
+                    {{-- File --}}
+                    <td class="px-4 py-4">
+                        @if($report->file_name)
+                        <a href="{{ asset('storage/upload/' . $report->file_name) }}" target="_blank"
+                           class="inline-flex items-center gap-1.5 text-xs font-semibold text-forest hover:text-forest-600 transition-colors">
+                            <svg class="w-4 h-4 text-sage-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                            <span class="truncate max-w-[120px]">{{ $report->file_name }}</span>
+                        </a>
+                        @else
+                        <span class="text-gray-400 font-medium">—</span>
+                        @endif
+                    </td>
+
                     {{-- Status --}}
                     <td class="px-4 py-4 text-center">
                         <span class="inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full
@@ -197,7 +214,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="6" class="px-6 py-12 text-center">
+                    <td colspan="7" class="px-6 py-12 text-center">
                         <div class="w-12 h-12 rounded-full bg-forest-50 flex items-center justify-center mx-auto mb-3">
                             <svg class="w-6 h-6 text-sage" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
@@ -272,6 +289,17 @@
                               focus:outline-none focus:border-forest focus:ring-2 focus:ring-forest/10">
             </div>
             <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1.5">Unggah Berkas Laporan</label>
+                <label class="flex flex-col items-center gap-2 border-2 border-dashed border-sage-200 rounded-xl p-4 cursor-pointer hover:border-forest hover:bg-forest-50 transition-all">
+                    <svg class="w-6 h-6 text-sage-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                    </svg>
+                    <span class="text-xs font-semibold text-sage-500" id="lap-file-label">Klik atau drag file (Maks. 10MB)</span>
+                    <input type="file" id="lap-file" accept=".csv,.xlsx,.xls,.pdf,.doc,.docx" class="hidden"
+                           onchange="validateSelectedFile(this)">
+                </label>
+            </div>
+            <div>
                 <label class="block text-xs font-semibold text-gray-700 mb-1.5">Status Awal</label>
                 <div class="flex gap-3">
                     <label class="flex-1 flex items-center gap-2 p-3 border border-gray-200 rounded-xl cursor-pointer hover:border-amber-300 transition-all has-[:checked]:border-amber-400 has-[:checked]:bg-amber-50">
@@ -308,6 +336,30 @@ function bukaModalLaporan() {
 }
 function tutupModal() {
     document.getElementById('modal-laporan').classList.add('hidden');
+    document.getElementById('lap-title').value = '';
+    document.getElementById('lap-file').value = '';
+    document.getElementById('lap-file-label').textContent = 'Klik atau drag file (Maks. 10MB)';
+}
+
+function validateSelectedFile(input) {
+    const file = input.files[0];
+    if (!file) return;
+
+    const allowedExtensions = ['csv', 'xlsx', 'xls', 'pdf', 'doc', 'docx'];
+    const extension = file.name.split('.').pop().toLowerCase();
+    if (!allowedExtensions.includes(extension)) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Format File Tidak Sesuai',
+            text: 'Hanya berkas CSV, XLSX, PDF, dan Word yang diperbolehkan.',
+            confirmButtonColor: '#096b68'
+        });
+        input.value = '';
+        document.getElementById('lap-file-label').textContent = 'Klik atau drag file (Maks. 10MB)';
+        return;
+    }
+
+    document.getElementById('lap-file-label').textContent = file.name;
 }
 
 async function simpanLaporan() {
@@ -315,25 +367,71 @@ async function simpanLaporan() {
     const type   = document.getElementById('lap-type').value;
     const date   = document.getElementById('lap-date').value;
     const status = document.querySelector('input[name="lap-status"]:checked')?.value;
+    const fileInput = document.getElementById('lap-file');
+    const file = fileInput ? fileInput.files[0] : null;
 
     if (!title) {
         Swal.fire({ icon: 'warning', title: 'Judul Kosong', text: 'Isi judul laporan terlebih dahulu.', confirmButtonColor: '#096b68' });
         return;
     }
 
-    const res = await apiFetch('{{ route('reports.store') }}', {
-        method: 'POST',
-        body: JSON.stringify({ title, type, report_date: date, status }),
+    if (file) {
+        const allowedExtensions = ['csv', 'xlsx', 'xls', 'pdf', 'doc', 'docx'];
+        const extension = file.name.split('.').pop().toLowerCase();
+        if (!allowedExtensions.includes(extension)) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Format File Tidak Sesuai',
+                text: 'Hanya berkas CSV, XLSX, PDF, dan Word yang diperbolehkan.',
+                confirmButtonColor: '#096b68'
+            });
+            return;
+        }
+    }
+
+    const formData = new FormData();
+    formData.append('title', title);
+    formData.append('type', type);
+    formData.append('report_date', date);
+    formData.append('status', status);
+    if (file) {
+        formData.append('file', file);
+    }
+
+    Swal.fire({
+        title: 'Menyimpan Laporan...',
+        text: 'Mohon tunggu sebentar.',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
     });
 
-    if (res.ok && res.data.success) {
-        tutupModal();
-        showSuccessModal('Laporan Berhasil Disimpan', res.data.message, new Date().toLocaleString('id-ID'));
-        setTimeout(() => location.reload(), 2000);
-    } else {
-        Swal.fire({ icon: 'error', title: 'Gagal', text: res.data.message, confirmButtonColor: '#096b68' });
+    try {
+        const res = await fetch('{{ route('reports.store') }}', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': window.csrfToken,
+                'Accept': 'application/json'
+            },
+            body: formData,
+        });
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+            tutupModal();
+            showSuccessModal('Laporan Berhasil Disimpan', data.message, new Date().toLocaleString('id-ID'));
+            setTimeout(() => location.reload(), 2000);
+        } else {
+            Swal.fire({ icon: 'error', title: 'Gagal', text: data.message || 'Gagal menyimpan laporan.', confirmButtonColor: '#096b68' });
+        }
+    } catch (err) {
+        console.error(err);
+        Swal.fire({ icon: 'error', title: 'Gagal', text: 'Koneksi gagal atau terjadi kesalahan.', confirmButtonColor: '#096b68' });
     }
 }
+
+
 
 async function publishLaporan(id, title) {
     const result = await Swal.fire({

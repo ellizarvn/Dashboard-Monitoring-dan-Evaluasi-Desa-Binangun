@@ -192,7 +192,11 @@
             <x-nav-item route="programs.index" icon="clipboard">Program Desa</x-nav-item>
             <x-nav-item route="reports.index" icon="document">Laporan Desa</x-nav-item>
 
-            @if(in_array(auth()->user()->role, ['admin','kepala_desa']))
+            @if(auth()->user()->isSuperAdmin())
+            <div class="px-3 pt-4 pb-1">
+                <span class="text-[9px] font-bold text-sage-500 uppercase tracking-widest">Sistem</span>
+            </div>
+            <x-nav-item route="users.index" icon="cog">Manajemen User</x-nav-item>
             <x-nav-item route="audit.index" icon="shield">Audit Log</x-nav-item>
             @endif
         </nav>
@@ -295,10 +299,15 @@
         @endif
 
         {{-- Page Content --}}
-        <main class="flex-1 overflow-y-auto">
-            <div class="p-4 sm:p-6 lg:p-7 max-w-screen-2xl mx-auto">
+        <main class="flex-1 flex flex-col overflow-y-auto">
+            <div class="flex-1 p-4 sm:p-6 lg:p-7 max-w-screen-2xl mx-auto w-full">
                 @yield('content')
             </div>
+            
+            {{-- Footer global --}}
+            <footer class="mt-auto  py-4 px-6 text-center text-xs text-sage-500">
+                &copy; 2026 Desa Binangun Kec. Banyumas, Kabupaten Banyumas, Jawa Tengah. All rights reserved.
+            </footer>
         </main>
     </div>
 </div>

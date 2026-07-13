@@ -134,10 +134,6 @@
                     </button>
                 </form>
 
-                <p class="mt-6 text-center text-sm text-gray-500">
-                    Belum punya akun?
-                    <a href="{{ route('auth.register') }}" class="font-bold text-forest hover:underline">Daftar sebagai Admin</a>
-                </p>
 
                 <p class="mt-3 text-center text-[11px] text-gray-400">
                     IP Anda: <span class="font-semibold">{{ request()->ip() }}</span> &mdash; Sesi ini dipantau & dicatat

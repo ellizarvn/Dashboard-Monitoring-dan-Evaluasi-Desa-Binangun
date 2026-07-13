@@ -15,7 +15,7 @@ class Report extends Model
     protected $table = 'reports';
 
     protected $fillable = [
-        'title', 'type', 'report_date', 'author_id', 'status',
+        'title', 'type', 'report_date', 'author_id', 'status', 'file_name',
     ];
 
     protected function casts(): array

@@ -51,7 +51,17 @@ class ReportController extends Controller
             'type'        => ['required', 'string', 'max:100'],
             'report_date' => ['required', 'date'],
             'status'      => ['required', 'in:Draft,Published'],
+            'file'        => ['nullable', 'file', 'mimes:csv,xlsx,xls,pdf,doc,docx,txt', 'max:10240'],
+        ], [
+            'file.mimes' => 'Format berkas tidak valid. Hanya berkas CSV, XLSX, PDF, dan Word yang diperbolehkan.',
         ]);
+
+        $fileName = null;
+        if ($request->hasFile('file') && $request->file('file')->isValid()) {
+            $uploadedFile = $request->file('file');
+            $fileName = time() . '_' . preg_replace('/[^a-zA-Z0-9._-]/', '_', $uploadedFile->getClientOriginalName());
+            $uploadedFile->move(storage_path('app/public/upload'), $fileName);
+        }
 
         $report = Report::create([
             'title'       => $request->title,
@@ -59,12 +69,13 @@ class ReportController extends Controller
             'report_date' => $request->report_date,
             'author_id'   => Auth::id(),
             'status'      => $request->status,
+            'file_name'   => $fileName,
         ]);
 
         $this->auditLogService->logBerhasil(
             'CREATE DATA',
             'Laporan Desa',
-            "Laporan '{$report->title}' dibuat dengan status {$report->status}"
+            "Laporan '{$report->title}' dibuat dengan status {$report->status}" . ($fileName ? " (File: {$fileName})" : "")
         );
 
         return response()->json(['success' => true, 'message' => 'Laporan berhasil disimpan.', 'data' => $report]);

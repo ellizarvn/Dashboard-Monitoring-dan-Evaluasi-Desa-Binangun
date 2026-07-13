@@ -5,6 +5,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProgramController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -22,9 +23,7 @@ use Illuminate\Support\Facades\Route;
 // AUTENTIKASI (Publik - tidak perlu login)
 // ============================================================
 Route::middleware('guest')->group(function () {
-    Route::get('/register', [AuthController::class, 'showRegister'])->name('auth.register');
-    Route::post('/register', [AuthController::class, 'register'])->name('auth.register.store');
-    Route::get('/login', [AuthController::class, 'showLogin'])->name('auth.login');
+    Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'login'])->name('auth.login.store');
 });
 
@@ -32,7 +31,7 @@ Route::middleware('guest')->group(function () {
 Route::get('/', function () {
     return auth()->check()
         ? redirect()->route('dashboard')
-        : redirect()->route('auth.login');
+        : redirect()->route('login');
 });
 
 // ============================================================
@@ -42,6 +41,13 @@ Route::middleware(['auth'])->group(function () {
 
     // ---- Logout ----
     Route::post('/logout', [AuthController::class, 'logout'])->name('auth.logout');
+
+    // ---- CRUD User (Khusus Super Admin) ----
+    Route::middleware('role:super_admin')->group(function () {
+        Route::resource('users', UserController::class);
+        Route::post('users/{user}/toggle', [UserController::class, 'toggleStatus'])->name('users.toggle');
+        Route::post('users/{user}/reset-password', [UserController::class, 'resetPassword'])->name('users.reset-password');
+    });
 
     // ---- Pengaturan Akun & Keamanan ----
     Route::prefix('pengaturan')->name('settings.')->group(function () {
@@ -60,9 +66,10 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('okr/partisipasi')->name('okr1.')->group(function () {
         Route::get('/', [DashboardController::class, 'okr1Index'])->name('index');
 
-        // Hanya admin dan tim_monitoring yang bisa input/edit
+        // Hanya admin dan tim_monitoring yang bisa input/edit/import
         Route::middleware('role:admin,tim_monitoring')->group(function () {
             Route::post('/simpan', [DashboardController::class, 'okr1Store'])->name('store');
+            Route::post('/import', [DashboardController::class, 'okr1Import'])->name('import');
         });
     });
 
@@ -75,6 +82,7 @@ Route::middleware(['auth'])->group(function () {
         Route::middleware('role:admin,tim_monitoring')->group(function () {
             Route::post('/transaksi', [DashboardController::class, 'okr2StoreTransaksi'])->name('transaksi.store');
             Route::post('/pades', [DashboardController::class, 'okr2StorePades'])->name('pades.store');
+            Route::post('/import', [DashboardController::class, 'okr2Import'])->name('import');
         });
     });
 
@@ -140,14 +148,11 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // ============================================================
-    // AUDIT LOG (admin & kepala_desa)
+    // AUDIT LOG (Khusus Super Admin)
     // ============================================================
     Route::prefix('audit-log')->name('audit.')->group(function () {
-        Route::middleware('role:admin,kepala_desa')->group(function () {
+        Route::middleware('role:super_admin')->group(function () {
             Route::get('/', [AuditLogController::class, 'index'])->name('index');
-        });
-
-        Route::middleware('role:admin')->group(function () {
             Route::get('/export-csv', [AuditLogController::class, 'exportCsv'])->name('export.csv');
         });
     });

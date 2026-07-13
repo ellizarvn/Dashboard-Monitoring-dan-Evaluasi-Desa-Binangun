@@ -254,21 +254,20 @@
 {{-- ============================================================ --}}
 <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-7">
 
-    {{-- Line Chart: Tren OKR Partisipasi --}}
+    {{-- Bar Chart: Alokasi Dana Desa --}}
     <div class="xl:col-span-2 bg-white rounded-2xl shadow-card border border-sage-100/60 p-6">
         <div class="flex items-center justify-between mb-5">
             <div>
-                <h3 class="font-bold text-forest text-sm">Tren Capaian Partisipasi {{ $year }}</h3>
-                <p class="text-[11px] text-sage-600 mt-0.5">Persentase kehadiran bulanan vs. target</p>
+                <h3 class="font-bold text-forest text-sm">Alokasi Dana Desa {{ $year }}</h3>
+                <p class="text-[11px] text-sage-600 mt-0.5">Proporsi anggaran berdasarkan bidang pembangunan desa</p>
             </div>
-            <div class="flex items-center gap-4 text-[10px] font-semibold text-gray-500">
-                <span class="flex items-center gap-1.5"><span class="w-3 h-0.5 bg-forest rounded inline-block"></span>Realisasi</span>
-                <span class="flex items-center gap-1.5"><span class="w-3 h-0.5 bg-sage-300 rounded inline-block border-dashed border-t"></span>Target</span>
+            <div class="text-[10px] font-bold text-forest bg-forest-50 px-2.5 py-1 rounded-full">
+                Total Pagu: {{ $alokasiDanaDesa['formatted'] }}
             </div>
         </div>
         <div class="h-52">
-            <canvas id="lineChart" data-tren="{{ json_encode($trenPartisipasi) }}"
-                    data-target="{{ $target?->target_partisipasi_persen ?? 90 }}"></canvas>
+            <canvas id="danaDesaChart" 
+                    data-values="{{ json_encode([$alokasiDanaDesa['pemerintahan'], $alokasiDanaDesa['pembangunan'], $alokasiDanaDesa['pembinaan'], $alokasiDanaDesa['pemberdayaan'], $alokasiDanaDesa['darurat']]) }}"></canvas>
         </div>
     </div>
 
@@ -380,58 +379,57 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // ---- Line Chart: Tren Partisipasi ----
-    const lineCanvas = document.getElementById('lineChart');
-    if (lineCanvas) {
-        const tren   = JSON.parse(lineCanvas.dataset.tren || '{}');
-        const target = parseFloat(lineCanvas.dataset.target) || 90;
-        new Chart(lineCanvas, {
-            type: 'line',
+    // ---- Bar Chart: Alokasi Dana Desa ----
+    const danaCanvas = document.getElementById('danaDesaChart');
+    if (danaCanvas) {
+        const values = JSON.parse(danaCanvas.dataset.values || '[0,0,0,0,0]');
+        new Chart(danaCanvas, {
+            type: 'bar',
             data: {
-                labels: tren.labels || [],
-                datasets: [
-                    {
-                        label: 'Realisasi (%)',
-                        data: tren.values || [],
-                        borderColor: '#096b68',
-                        backgroundColor: 'rgba(9,107,104,0.08)',
-                        borderWidth: 2.5,
-                        pointBackgroundColor: '#096b68',
-                        pointRadius: 4,
-                        pointHoverRadius: 6,
-                        tension: 0.4,
-                        fill: true,
-                    },
-                    {
-                        label: 'Target (%)',
-                        data: (tren.labels || []).map(() => target),
-                        borderColor: '#87A996',
-                        borderWidth: 1.5,
-                        borderDash: [5, 4],
-                        pointRadius: 0,
-                        tension: 0,
-                        fill: false,
-                    }
-                ]
+                labels: [
+                    'Penyelenggaraan Pemerintahan',
+                    'Pelaksanaan Pembangunan',
+                    'Pembinaan Kemasyarakatan',
+                    'Pemberdayaan Masyarakat',
+                    'Darurat & Bencana'
+                ],
+                datasets: [{
+                    label: 'Alokasi Anggaran',
+                    data: values,
+                    backgroundColor: [
+                        '#096b68', // forest
+                        '#87A996', // sage
+                        '#A8D5BA', // mint 400
+                        '#CCE7D6', // mint 300
+                        '#E6F0EB'  // sage 100
+                    ],
+                    borderRadius: 6,
+                    borderWidth: 0,
+                    barThickness: 14
+                }]
             },
             options: {
+                indexAxis: 'y',
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
                     legend: { display: false },
                     tooltip: {
                         callbacks: {
-                            label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y}%`
+                            label: ctx => ` Rp ${ctx.parsed.x.toLocaleString('id-ID')}`
                         }
                     }
                 },
                 scales: {
-                    y: {
-                        min: 60, max: 100,
+                    x: {
                         grid: { color: 'rgba(135,169,150,0.1)' },
-                        ticks: { callback: v => v + '%' }
+                        ticks: {
+                            callback: v => 'Rp ' + (v / 1000000) + 'jt'
+                        }
                     },
-                    x: { grid: { display: false } }
+                    y: {
+                        grid: { display: false }
+                    }
                 }
             }
         });

@@ -194,7 +194,7 @@
 
             <p class="mt-3 text-center text-[13px] text-gray-500">
                 Sudah punya akun?
-                <a href="{{ route('auth.login') }}" class="font-bold text-forest hover:underline">Masuk di sini</a>
+                <a href="{{ route('login') }}" class="font-bold text-forest hover:underline">Masuk di sini</a>
             </p>
         </div>
     </div>
@@ -227,7 +227,7 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         buttonsStyling: false,
     }).then(() => {
-        window.location = '{{ route('auth.login') }}';
+        window.location = '{{ route('login') }}';
     });
 });
 </script>
@@ -293,7 +293,7 @@ async function submitRegistrasi() {
                 confirmButtonText: 'Masuk ke Portal',
                 customClass: { confirmButton: 'bg-forest text-white font-bold px-8 py-3 rounded-xl text-sm' },
                 buttonsStyling: false,
-            }).then(() => window.location = '{{ route('auth.login') }}');
+            }).then(() => window.location = '{{ route('login') }}');
         } else {
             const errs = json.errors ? Object.values(json.errors).flat().join('\n') : json.message;
             Swal.fire({ icon: 'error', title: 'Gagal Mendaftar', text: errs, confirmButtonColor: '#096b68' });

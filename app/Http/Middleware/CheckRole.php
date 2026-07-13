@@ -26,11 +26,15 @@ class CheckRole
     public function handle(Request $request, Closure $next, string ...$roles): Response
     {
         if (!Auth::check()) {
-            return redirect()->route('auth.login');
+            return redirect()->route('login');
         }
 
         /** @var \App\Models\User $user */
         $user = Auth::user();
+
+        if ($user->isSuperAdmin()) {
+            return $next($request);
+        }
 
         if (!in_array($user->role, $roles)) {
             // Catat percobaan akses tidak sah
